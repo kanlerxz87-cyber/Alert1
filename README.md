@@ -1,4 +1,4 @@
-> **Copy notice (2026-11-25):** This repository copies [LIVPBP at commit 5c02527](https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3). The documentation below is inherited from upstream. This session ran offline tests but could not independently reach MLB StatsAPI or the reference deployment; live data and parity remain unverified. See [Flagged for Review](flagged.html). The optional server persistence is not available on static GitHub Pages; browser local storage is used there.
+> **Copy notice (2026-11-25):** This repository copies [LIVPBP at commit 5c02527](https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3), matching the [reference replay feed](https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26). The documentation below is inherited from upstream. Session `c394a038` re-verified the live MLB StatsAPI responses and the reference rows; every source link is in [docs/verification-report.md §8](docs/verification-report.md) and on the [Flagged for Review](flagged.html) page. The optional feed-log server is not available on static GitHub Pages; browser local storage is used there. The upstream historical coordination board is preserved in [`audit/upstream-coordination.md`](audit/upstream-coordination.md). The upstream `v1.0.0-stable-checkpoint` tag is not present in this repository and is flagged.
 
 # ⚾ MLB Live PBP — Live MLB Scoreboard & Play-by-Play
 
@@ -14,7 +14,7 @@
 > `node tests/jsdom-render-test.mjs` (field map: `docs/statsapi-field-map.md`). Known deviations from this README's description of the
 > original (refresh cadence, the reduced hit-forecast drivers, the simplified review score tracker,
 > and every unverified item) are published on the
-> **[⚑ Flagged for Review](https://snapquast73-boop.github.io/LIVPBP/flagged.html)** page, with source
+> **[⚑ Flagged for Review](https://kanlerxz87-cyber.github.io/Alert1/flagged.html)** page, with source
 > links. The text below is the original project documentation, unchanged apart from this note, the
 > demo link, the file-tree entries that now exist, and the test commands in "Run it locally".
 
