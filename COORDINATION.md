@@ -23,13 +23,23 @@ Updated 2026-11-25 by session **`0eea8c12`** (branch `arena/0eea8c12-alert1`, br
 | E-3 | Line-by-line provenance check: every table row in `flagged.html` / `docs/verification-report.md` / `README.md` carries an official `https://` source link; blank + flagged where unverifiable | `done` | `e9936287` | `flagged.html` (§18 added), `audit/alert1-reverify-2026-11-25-e9936287.md` | Provenance test 4/4 incl. every-row-link check; new §18 rows E-1..E-F4 each link an official source; unverifiable items blank + flagged (E-F1..E-F4) — https://statsapi.mlb.com/api/v1/game/823506/playByPlay · https://github.com/snapquast73-boop/LIVPBP/tags · https://www.mlb.com/ |
 | E-4 | Open PR `arena/e9936287-alert1` → `main`, merge autonomously, verify GitHub Pages deploy + live URLs, record PR/merge result here | `done` | `e9936287` | `COORDINATION.md` | PR #9 merged (`594f46b`); `Site checks` run `45709286230` (`test` + `dom-smoke` pass); Pages build `built 594f46b`; `Published Pages delivery` run `45709546110` succeeded; live verified https://kanlerxz87-cyber.github.io/Alert1/reviews.html?date=2026-08-26 , https://kanlerxz87-cyber.github.io/Alert1/flagged.html (§18), https://kanlerxz87-cyber.github.io/Alert1/?date=2027-03-25 — PR https://github.com/kanlerxz87-cyber/Alert1/pull/9 |
 
+Updated 2026-11-25 by session **`36284656`** (branch `arena/36284656-alert1`, base `e22ec1d`): this session claims ONLY the non-overlapping verification scope H-1..H-3 below. No site code, shared table data, navigation, `flagged.html`, `docs/`, or `tests/` files will be edited; other sessions' claims are untouched.
+
+## Active task board — session `36284656` (2026-11-25)
+
+| ID | Task | Status | Owner | File scope | Notes / Official Source |
+|---|---|---|---|---|---|
+| H-1 | Verify the currently published GitHub Pages revision and that every HTML page/asset and internal link on the published site resolves (no broken links), using the official GitHub Pages API and live Pages URLs | `done` | `36284656` | `COORDINATION.md`, new `audit/36284656-pages-delivery-verification.md` | Published build `e22ec1d` status `built`; 50/50 local links; all live pages/assets fetched — https://api.github.com/repos/kanlerxz87-cyber/Alert1/pages/builds/latest · https://kanlerxz87-cyber.github.io/Alert1/ |
+| H-2 | Independently verify the reference replay page and the official MLB schedule for an upcoming game day; record values only when confirmed by the official source, otherwise leave blank and flag | `done` | `36284656` | new `audit/36284656-pages-delivery-verification.md` | 17 games `2027-02-19`, 14 games `2027-03-25`, and all 10 non-ABS after-scores verified; before-scores left blank and flagged — https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-11-25&endDate=2027-05-24&fields=dates,date,totalGames · https://statsapi.mlb.com/api/v1/game/823180/playByPlay |
+| H-3 | Publish this verification record autonomously (PR → merge → confirm Pages deploy) without modifying any other session's scope | `in progress` | `36284656` | `COORDINATION.md`, new `audit/36284656-pages-delivery-verification.md` | Final integration of shared site files remains with the sessions listed above; this task integrates only this audit record — https://github.com/kanlerxz87-cyber/Alert1/pulls |
+
 
 ## Branch note (Arena sandbox restriction)
 
 Arena fixes each session to one branch and forbids creating/pushing other branches, so the
 brief's `session-<id>/<task>` branch convention cannot be followed literally. Each session's
 work stays on its assigned branch only (`arena/db1b5438-alert1`, `arena/c394a038-alert1`,
-`arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`, `arena/e9936287-alert1`, `arena/f0bea661-alert1`, `arena/0eea8c12-alert1`); integration is a pull request from that branch
+`arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`, `arena/e9936287-alert1`, `arena/f0bea661-alert1`, `arena/0eea8c12-alert1`, `arena/36284656-alert1`); integration is a pull request from that branch
 into `main`. The deviation is published on [`flagged.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) (C-7 / A1-9 / F-5 / H-4).
 
 ## Preserved board — session `f0bea661` (PR #11 @ `3e611fe`)
