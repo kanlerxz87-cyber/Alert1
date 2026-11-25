@@ -31,6 +31,7 @@
     scoringChanges: Object.create(null),
     log: null,
     loading: false,
+    scheduleLoaded: false,
     lastError: null,
     lastUpdated: 0,
     timers: { poll: null, sweep: null },
@@ -137,6 +138,7 @@
       .then(function (payload) {
         if (reqSeq !== state.dateSeq || reqDate !== state.date) return;
         state.games = flattenGames(payload);
+        state.scheduleLoaded = true;
         state.lastError = null;
         state.lastUpdated = Date.now();
         state.scheduled = state.games.map(function (g) { return g.gamePk; });
@@ -275,7 +277,7 @@
       if (typeof outs === 'number') metaBits.push(outs + ' out' + (outs === 1 ? '' : 's'));
     }
     if (!meta.live && !meta.final) {
-      metaBits.push(MLB.formatGameTime(game.gameDate) || 'TBD');
+      metaBits.push(status.startTimeTBD ? 'TBD' : (MLB.formatGameTime(game.gameDate) || 'TBD'));
     }
     if (game.venue && game.venue.name) metaBits.push(game.venue.name);
     if (game.seriesGameNumber && game.gamesInSeries) {
@@ -305,7 +307,7 @@
       '<a class="' + classList.join(' ') + '" href="game.html?gamePk=' + encodeURIComponent(game.gamePk) + '&date=' + encodeURIComponent(state.date) + '">' +
         '<div class="card-top">' +
           '<span class="card-status ' + meta.cls + '">' + UI.esc(statusText) + '</span>' +
-          '<span>' + UI.esc(MLB.formatGameTime(game.gameDate)) + '</span>' +
+          '<span>' + UI.esc(status.startTimeTBD ? 'TBD' : MLB.formatGameTime(game.gameDate)) + '</span>' +
         '</div>' +
         teamRow(away, awayScore, game) +
         teamRow(home, homeScore, game) +
@@ -405,7 +407,7 @@
         state.reviewByPk[g.gamePk] ? state.reviewByPk[g.gamePk].signature : '',
         state.scoringChanges[g.gamePk] || 0].join(':');
     });
-    return state.filter + '|' + state.date + '|' + bits.join('|');
+    return state.filter + '|' + state.date + '|' + (state.scheduleLoaded ? '1' : '0') + '|' + bits.join('|');
   }
 
   function renderIfChanged() {
@@ -422,6 +424,14 @@
     if (!list) return;
     var games = visibleGames();
     if (!state.games.length) {
+      if (!state.scheduleLoaded) {
+        list.innerHTML = '<div class="panel" style="grid-column:1/-1;text-align:center;color:var(--muted)">' +
+          (state.lastError
+            ? 'Could not load games for ' + UI.esc(MLB.formatDateLabel(state.date)) + '. Retrying…'
+            : 'Loading games for ' + UI.esc(MLB.formatDateLabel(state.date)) + '…') +
+          '</div>';
+        return;
+      }
       list.innerHTML = '<div class="panel" style="grid-column:1/-1;text-align:center;color:var(--muted)">' +
         'No games scheduled for ' + UI.esc(MLB.formatDateLabel(state.date)) + '.' +
         (state.lastGameDate
@@ -474,6 +484,7 @@
     if (clean === state.date) return;
     state.dateSeq += 1;
     state.date = clean;
+    state.scheduleLoaded = false;
     state.lastGameDate = undefined;
     state.lookingForRecent = false;
     state.reviewByPk = Object.create(null);
