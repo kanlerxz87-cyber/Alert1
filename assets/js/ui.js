@@ -58,10 +58,18 @@
     return team.name || team.teamName || '';
   }
 
+  function teamAbbrField(team) {
+    if (!team || typeof team === 'number') return '';
+    if (team.team && team.team.abbreviation) return String(team.team.abbreviation);
+    return team.abbreviation ? String(team.abbreviation) : '';
+  }
+
   function abbr(team) {
     var id = teamId(team);
+    var explicit = teamAbbrField(team);
+    if (id && TEAM_ABBR[id]) return TEAM_ABBR[id];
+    if (explicit) return explicit.toUpperCase();
     if (!id) return '';
-    if (TEAM_ABBR[id]) return TEAM_ABBR[id];
     var name = teamName(team);
     return name ? name.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase() : '';
   }

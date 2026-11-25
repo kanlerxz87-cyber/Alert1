@@ -1240,6 +1240,53 @@ node server.mjs                  # optional persistence backend (feed log + SSE)
       </tbody>
     </table>
 
+    <h2>18. Independent line-by-line verification, non-MLB Spring Training abbreviations &amp; scoreboard race guards (session <code>15b89941</code>, 2026-11-25)</h2>
+    <p style="color:var(--muted);font-size:13px">
+      Session <code>15b89941</code> independently audited <code>kanlerxz87-cyber/Alert1</code> against upstream
+      <code>snapquast73-boop/LIVPBP</code> (<code>5c02527</code>), the live reference deployment, and live
+      <code>statsapi.mlb.com</code> payloads for <code>2026-08-26</code>, <code>2027-02-19</code>, and
+      <code>2027-03-25</code>. Full detail:
+      <a href="audit/alert1-session-15b89941-verification.md">audit/alert1-session-15b89941-verification.md</a>.
+    </p>
+    <table class="flagged-table">
+      <thead>
+        <tr>
+          <th style="width:62px">#</th>
+          <th>Item / Irregularity</th>
+          <th>Official Source Payload</th>
+          <th>Disposition in <code>Alert1</code></th>
+          <th>Official Source Link</th>
+          <th style="width:128px">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>S15-1</td>
+          <td class="wrap">Non-MLB Spring Training exhibition opponents on upcoming <code>2027-02-19</code> schedule (e.g., <code>868575</code> <code>Northeastern Huskies</code> @ <code>Boston Red Sox</code>) carry an official <code>abbreviation</code> (<code>"NEU"</code>) absent from the 30-club <code>TEAM_ABBR</code> map</td>
+          <td class="wrap"><code>game/868575/feed/live</code>: <code>teams.away = {"id":343,"name":"Northeastern Huskies","abbreviation":"NEU","teamName":"Huskies"}</code></td>
+          <td class="wrap"><strong>Fixed &amp; tested:</strong> <code>UI.abbr(team)</code> in <code>assets/js/ui.js</code> now checks <code>TEAM_ABBR[id]</code>, then official <code>team.abbreviation</code> / <code>team.team.abbreviation</code> (producing <code>NEU</code> rather than slicing <code>NOR</code>), falling back to a 3-letter prefix only when no official abbreviation exists.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1.1/game/868575/feed/live?fields=gameData,game,status,teams,away,home,id,name,abbreviation,teamName" target="_blank" rel="noopener">game/868575/feed/live</a> · <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2027-02-19" target="_blank" rel="noopener">2027-02-19 schedule</a></td>
+          <td class="status-ok">Fixed &amp; tested</td>
+        </tr>
+        <tr>
+          <td>S15-2</td>
+          <td class="wrap"><code>scoreboard.js</code> <code>sweepStatus()</code> and <code>loadLog()</code> lacked <code>dateSeq</code> / <code>date</code> staleness checks, and <code>init()</code> / <code>setDate()</code> issued a duplicate <code>fetchSchedule()</code> via <code>schedulePoll(LIVE_POLL_MS)</code> / <code>schedulePoll(0)</code></td>
+          <td class="wrap">Upcoming/offseason slates (e.g. <code>2027-02-19</code> Preview, <code>2026-11-25</code> offseason) do not require a 500 ms second schedule poll on load</td>
+          <td class="wrap"><strong>Fixed &amp; tested:</strong> added <code>dateSeq</code> / <code>date</code> guards to <code>sweepStatus()</code> and <code>loadLog()</code> and routed initial/date-change loads through <code>tick()</code> (verified in <code>tests/alert1-feedlog-and-provenance-test.mjs</code>).</td>
+          <td class="wrap"><a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/scoreboard.js" target="_blank" rel="noopener">assets/js/scoreboard.js</a> · <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2027-03-25" target="_blank" rel="noopener">2027-03-25 schedule</a></td>
+          <td class="status-ok">Fixed &amp; tested</td>
+        </tr>
+        <tr>
+          <td>S15-3</td>
+          <td class="wrap">Archived upstream board <code>audit/upstream-coordination.md</code> retains 91 upstream rows without <code>https://</code> source links; Arena fixed branch <code>arena/15b89941-alert1</code> used instead of <code>session-&lt;id&gt;/&lt;task&gt;</code>; unverified upstream constants (<code>U-1</code>/<code>U-2</code>/<code>U-9</code>/<code>U-10</code>) remain unconfirmed</td>
+          <td class="wrap">Upstream <code>snapquast73-boop/LIVPBP</code> commit <code>5c02527</code> <code>COORDINATION.md</code> archived verbatim; all active <code>Alert1</code> tables carry 100% official <code>https://</code> source links</td>
+          <td class="wrap"><strong>Flagged:</strong> upstream archive kept verbatim rather than altering historical records; Arena fixed branch logged in <a href="COORDINATION.md">COORDINATION.md</a>; live parity on <code>2026-08-26</code> (15 games / 78 entries) and upcoming <code>2027</code> dates confirmed.</td>
+          <td class="wrap"><a href="https://github.com/snapquast73-boop/LIVPBP/blob/5c02527d3c7a56ea66c698cfabff80a407b6dfd3/COORDINATION.md" target="_blank" rel="noopener">upstream COORDINATION.md</a> · <a href="https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26" target="_blank" rel="noopener">reference LIVPBP page</a> · <a href="COORDINATION.md">COORDINATION.md</a></td>
+          <td class="status-flag">Flagged</td>
+        </tr>
+      </tbody>
+    </table>
+
   </main>
 
   <footer class="site-footer">
