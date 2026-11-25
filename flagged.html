@@ -1237,6 +1237,14 @@ node server.mjs                  # optional persistence backend (feed log + SSE)
           <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;startDate=2026-05-29&amp;endDate=2027-05-24&amp;fields=dates,date,totalGames" target="_blank" rel="noopener">360-day schedule range</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/COORDINATION.md" target="_blank" rel="noopener">COORDINATION.md</a></td>
           <td class="status-ok">Verified &amp; tested</td>
         </tr>
+        <tr>
+          <td>F-6</td>
+          <td class="wrap">The provenance regression test treats any HTTPS link as a source link; it does not verify that the host is authoritative for the row, that the linked payload supports its values, or that all dynamic/site tables are covered.</td>
+          <td class="wrap">The current checker requires an HTTPS <code>href</code> in each selected <code>flagged.html</code> body row and an HTTPS URL in Markdown table rows in its fixed file list. It does not fetch links or compare table values to source payloads.</td>
+          <td class="wrap"><strong>Needs review:</strong> passing provenance checks establish link presence, not full official-source verification. Prior dated MLB checks remain linked in the audit report; a fresh live StatsAPI audit was not performed in this pass.</td>
+          <td class="wrap"><a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/tests/alert1-feedlog-and-provenance-test.mjs" target="_blank" rel="noopener">Provenance test</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/.github/workflows/site-check.yml" target="_blank" rel="noopener">CI workflow</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/audit/independent-review-2026-11-25.md" target="_blank" rel="noopener">This review</a></td>
+          <td class="status-flag">Flagged — verification scope</td>
+        </tr>
       </tbody>
     </table>
 
