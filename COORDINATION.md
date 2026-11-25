@@ -4,17 +4,25 @@ Repo: `kanlerxz87-cyber/Alert1` · Site: https://kanlerxz87-cyber.github.io/Aler
 Reference: https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26
 Copied source: https://github.com/snapquast73-boop/LIVPBP @ `5c02527d3c7a56ea66c698cfabff80a407b6dfd3`
 
-Updated 2026-11-25 by session **`fae80285`** (branch `arena/fae80285-alert1`, fast-forwarded to `origin/main` @ `d99fada`) preserving all prior parallel sessions (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`).
+Updated 2026-11-25 by session **`0eea8c12`** (branch `arena/0eea8c12-alert1`, branched from `origin/main` @ `e22ec1d`) preserving all prior parallel sessions (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`, `fae80285`).
 
 ## Branch note (Arena sandbox restriction)
 
 Arena fixes each session to one branch and forbids creating/pushing other branches, so the
 brief's `session-<id>/<task>` branch convention cannot be followed literally. Each session's
 work stays on its assigned branch only (`arena/db1b5438-alert1`, `arena/c394a038-alert1`,
-`arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`); integration is a pull request from that branch
-into `main`. The deviation is published on [`flagged.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) (C-7 / A1-9 / F-5).
+`arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`, `arena/0eea8c12-alert1`); integration is a pull request from that branch
+into `main`. The deviation is published on [`flagged.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) (C-7 / A1-9 / F-5 / H-4).
 
-## Active task board — session `fae80285` (2026-11-25)
+## Active task board — session `0eea8c12` (2026-11-25)
+
+| ID | Task | Status | Owner | File scope | Notes / Official Source |
+|---|---|---|---|---|---|
+| H-1 | Independent copy-parity + upcoming-game-day verification: upstream `5c02527` byte-parity, live reference parity on `reviews.html?date=2026-08-26`, official MLB StatsAPI spot-checks (`2026-08-26` 15 games, `2027-02-19` Spring Training, `2027-03-25` Opening Day incl. `startTimeTBD`), offline suites | `in progress` | `0eea8c12` | `audit/alert1-verification-0eea8c12.md`, `COORDINATION.md` | Upstream HEAD is still `5c02527` (https://github.com/snapquast73-boop/LIVPBP/commits); live parity + official schedule checks: https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-08-26 |
+| H-2 | Correct the `v1.0.0-stable-checkpoint` tag record: tag exists only on upstream (`ffceec3`), absent in this repo (`git ls-remote --tags origin` empty), so README's `git reset --hard` instruction fails here; update README copy notice + `flagged.html` §18 | `unclaimed` | `0eea8c12` | `README.md`, `flagged.html` | Upstream tag ref: https://github.com/snapquast73-boop/LIVPBP/tree/v1.0.0-stable-checkpoint |
+| H-3 | Run all checks, open PR from `arena/0eea8c12-alert1` → `main`, merge autonomously, verify live GitHub Pages deployment, record PR/merge result | `unclaimed` | `0eea8c12` | `COORDINATION.md` | — |
+
+## Preserved board — session `fae80285` (2026-11-25)
 
 | ID | Task | Status | Owner | File scope | Notes / Official Source |
 |---|---|---|---|---|---|
