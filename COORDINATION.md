@@ -4,7 +4,18 @@ Repo: `kanlerxz87-cyber/Alert1` · Site: https://kanlerxz87-cyber.github.io/Aler
 Reference: https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26
 Copied source: https://github.com/snapquast73-boop/LIVPBP @ `5c02527d3c7a56ea66c698cfabff80a407b6dfd3`
 
-Updated 2026-11-25 by session **`fae80285`** (branch `arena/fae80285-alert1`, fast-forwarded to `origin/main` @ `d99fada`) preserving all prior parallel sessions (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`).
+Updated 2026-11-25 by session **`e9936287`** (branch `arena/e9936287-alert1`, branched from `origin/main` @ `e22ec1d`) preserving all prior parallel sessions (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`, `fae80285`).
+
+## Active task board — session `e9936287` (2026-11-25)
+
+| ID | Task | Status | Owner | File scope | Notes / Official Source |
+|---|---|---|---|---|---|
+| E-1 | Re-verify copy parity vs upstream `snapquast73-boop/LIVPBP` @ `5c02527` (current upstream HEAD, pushed 2026-11-22) + live reference vs Alert1 Pages for `2026-08-26`, upcoming `2027-02-19` / `2027-03-25`, and offseason `2026-11-25` | `done` | `e9936287` | `audit/alert1-reverify-2026-11-25-e9936287.md`, `COORDINATION.md` | Upstream HEAD still `5c02527` via https://api.github.com/repos/snapquast73-boop/LIVPBP/commits ; live parity 10/8/2/68/1/0/1, 15 games, 78 tracked on both https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26 and https://kanlerxz87-cyber.github.io/Alert1/reviews.html?date=2026-08-26 ; official https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-08-26 |
+| E-2 | Run full local test suites + local server smoke test (scoreboard, game, reviews, flagged, 404) with zero manual input | `done` | `e9936287` | `tests/*`, `tools/*` (read-only) | `npm test` 69/69, `run-all.mjs` PASS, `restoration-check.mjs` PASS, `props-provenance-test.mjs` 5/5, `alert1-feedlog-and-provenance-test.mjs` 4/4, local `server.mjs` all pages HTTP 200 — site https://kanlerxz87-cyber.github.io/Alert1/ , API https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-08-26 |
+| E-3 | Line-by-line provenance check: every table row in `flagged.html` / `docs/verification-report.md` / `README.md` carries an official `https://` source link; blank + flagged where unverifiable | `done` | `e9936287` | `flagged.html` (§18 added), `audit/alert1-reverify-2026-11-25-e9936287.md` | Provenance test 4/4 incl. every-row-link check; new §18 rows E-1..E-F4 each link an official source; unverifiable items blank + flagged (E-F1..E-F4) — https://statsapi.mlb.com/api/v1/game/823506/playByPlay · https://github.com/snapquast73-boop/LIVPBP/tags · https://www.mlb.com/ |
+| E-4 | Open PR `arena/e9936287-alert1` → `main`, merge autonomously, verify GitHub Pages deploy + live URLs, record PR/merge result here | `unclaimed` | `e9936287` | `COORDINATION.md` | PR https://github.com/kanlerxz87-cyber/Alert1/pulls · live https://kanlerxz87-cyber.github.io/Alert1/reviews.html?date=2026-08-26 · reference https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26 |
+
+## Preserved board — session `fae80285` (2026-11-25)
 
 ## Branch note (Arena sandbox restriction)
 
