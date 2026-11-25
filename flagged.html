@@ -1237,8 +1237,210 @@ node server.mjs                  # optional persistence backend (feed log + SSE)
           <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;startDate=2026-05-29&amp;endDate=2027-05-24&amp;fields=dates,date,totalGames" target="_blank" rel="noopener">360-day schedule range</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/COORDINATION.md" target="_blank" rel="noopener">COORDINATION.md</a></td>
           <td class="status-ok">Verified &amp; tested</td>
         </tr>
+        <tr>
+          <td>F-6</td>
+          <td class="wrap">The provenance regression test treats any HTTPS link as a source link; it does not verify that the host is authoritative for the row, that the linked payload supports its values, or that all dynamic/site tables are covered.</td>
+          <td class="wrap">The current checker requires an HTTPS <code>href</code> in each selected <code>flagged.html</code> body row and an HTTPS URL in Markdown table rows in its fixed file list. It does not fetch links or compare table values to source payloads.</td>
+          <td class="wrap"><strong>Needs review:</strong> passing provenance checks establish link presence, not full official-source verification. Prior dated MLB checks remain linked in the audit report; a fresh live StatsAPI audit was not performed in this pass.</td>
+          <td class="wrap"><a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/tests/alert1-feedlog-and-provenance-test.mjs" target="_blank" rel="noopener">Provenance test</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/.github/workflows/site-check.yml" target="_blank" rel="noopener">CI workflow</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/audit/independent-review-2026-11-25.md" target="_blank" rel="noopener">This review</a></td>
+          <td class="status-flag">Flagged — verification scope</td>
+        </tr>
       </tbody>
     </table>
+
+    <h2>18. Independent re-verification of the copy + upcoming game days (session <code>e9936287</code>, 2026-11-25)</h2>
+    <p style="color:var(--muted);font-size:13px">
+      Session <code>e9936287</code> re-cloned upstream <code>snapquast73-boop/LIVPBP</code> and confirmed its HEAD is still
+      <code>5c02527</code> (pushed 2026-11-22) — no upstream drift since the copy — then compared the live reference and this
+      site side by side on <code>2026-08-26</code> and on upcoming dates. Full line-by-line table:
+      <a href="audit/alert1-reverify-2026-11-25-e9936287.md">audit/alert1-reverify-2026-11-25-e9936287.md</a>.
+    </p>
+    <table class="flagged-table">
+      <thead>
+        <tr>
+          <th style="width:62px">#</th>
+          <th>Item / Irregularity</th>
+          <th>Official Source Payload</th>
+          <th>Disposition in <code>Alert1</code></th>
+          <th>Official Source Link</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>E-1</td>
+          <td class="wrap">Copy parity: upstream HEAD still <code>5c02527</code>; core pages/assets byte-identical; only intentional deviations (404 base path, homepage, static-host <code>FeedLog</code> guard, <code>startTimeTBD</code>, upcoming-date jump)</td>
+          <td class="wrap">GitHub API commits + <code>diff -rq</code> of a fresh clone vs this repo</td>
+          <td class="wrap">No functional change needed; deviations already documented in <a href="COORDINATION.md">COORDINATION.md</a></td>
+          <td class="wrap"><a href="https://api.github.com/repos/snapquast73-boop/LIVPBP/commits" target="_blank" rel="noopener">upstream commits</a> · <a href="https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3" target="_blank" rel="noopener">upstream tree</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>E-2</td>
+          <td class="wrap">Live parity <code>2026-08-26</code>: reference and Alert1 both show 10 reviews / 8 challenges / 2 umpire / 68 ABS / 1 boundary / 0 under review / 1 runs at risk / 15 games / 78 tracked entries, with identical rows and official per-row source links</td>
+          <td class="wrap"><code>schedule?date=2026-08-26</code> <code>totalGames: 15</code>; per-game <code>playByPlay</code> review rows match</td>
+          <td class="wrap">Site runs with zero manual input; row order may differ by scan timing only</td>
+          <td class="wrap"><a href="https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26" target="_blank" rel="noopener">reference feed</a> · <a href="https://kanlerxz87-cyber.github.io/Alert1/reviews.html?date=2026-08-26" target="_blank" rel="noopener">Alert1 feed</a> · <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2026-08-26" target="_blank" rel="noopener">official schedule</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>E-3</td>
+          <td class="wrap">Upcoming game days: <code>2027-02-19</code> (17 games), <code>2027-03-25</code> (14 games, <code>TBD</code> for <code>startTimeTBD</code> games), offseason <code>2026-11-25</code> offers one-click jump to <code>2026-10-28</code> and <code>2027-02-19</code></td>
+          <td class="wrap">Official schedules for both 2027 dates; <code>[-180d,+180d]</code> range query</td>
+          <td class="wrap">No hardcoded dates in <code>assets/js/</code>; dates are <code>?date=</code> driven</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2027-02-19" target="_blank" rel="noopener">2027-02-19</a> · <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2027-03-25" target="_blank" rel="noopener">2027-03-25</a> · <a href="https://kanlerxz87-cyber.github.io/Alert1/?date=2026-11-25" target="_blank" rel="noopener">offseason page</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>E-F1</td>
+          <td class="wrap">Inherited upstream MLB StatsAPI <code>reviewDetails</code> schema quirks on <code>2026-08-26</code>: <code>823506:56:0:MA</code> reason "Pickoff Attempt 1B", <code>823506:19:5:NH</code> reason "Foul", <code>823180:84:p:NF</code> dual-call crew review</td>
+          <td class="wrap">Official <code>playByPlay</code> payloads carry these reason strings verbatim</td>
+          <td class="wrap">Rendered verbatim from the official payload; not corrected or inferred</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/game/823506/playByPlay" target="_blank" rel="noopener">game 823506 playByPlay</a> · <a href="https://statsapi.mlb.com/api/v1/game/823180/playByPlay" target="_blank" rel="noopener">game 823180 playByPlay</a></td>
+          <td class="status-ok">Flagged — do not block</td>
+        </tr>
+        <tr>
+          <td>E-F2</td>
+          <td class="wrap">Optional feed-log persistence server (<code>server.mjs</code> <code>/api/feed-log</code>) is not available on static GitHub Pages</td>
+          <td class="wrap">Static hosting has no server endpoints; <code>isStaticHost()</code> guard prevents failing calls</td>
+          <td class="wrap">Browser local storage is used on Pages; server mode works locally via <code>npm run serve</code></td>
+          <td class="wrap"><a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/feed-log.js" target="_blank" rel="noopener">feed-log.js</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/server.mjs" target="_blank" rel="noopener">server.mjs</a></td>
+          <td class="status-ok">Flagged — do not block</td>
+        </tr>
+        <tr>
+          <td>E-F3</td>
+          <td class="wrap">Upstream <code>v1.0.0-stable-checkpoint</code> tag is not present in this repository</td>
+          <td class="wrap">Tag exists upstream only</td>
+          <td class="wrap">Left blank / flagged; no value invented</td>
+          <td class="wrap"><a href="https://github.com/snapquast73-boop/LIVPBP/tags" target="_blank" rel="noopener">upstream tags</a></td>
+          <td class="status-ok">Flagged — do not block</td>
+        </tr>
+        <tr>
+          <td>E-F4</td>
+          <td class="wrap">Hit-forecast model constants are upstream estimates, not official MLB values</td>
+          <td class="wrap">Season inputs come from official <code>people/{id}/stats</code>; model weights are not published by MLB</td>
+          <td class="wrap">Unconfirmed stats render blank (<code>—</code>), never inferred; every driver row links its official source</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/people/660271/stats?stats=expectedStatistics,season,statSplits,gameLog&amp;group=hitting&amp;sitCodes=vl,vr&amp;season=2026" target="_blank" rel="noopener">people/660271/stats</a></td>
+          <td class="status-ok">Flagged — do not block</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>19. Independent copy-parity &amp; upcoming-game-day verification (session <code>0eea8c12</code>, 2026-11-25)</h2>
+    <p style="color:var(--muted);font-size:13px">
+      Session <code>0eea8c12</code> independently re-verified the copy of upstream
+      <a href="https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3" target="_blank" rel="noopener">LIVPBP @ 5c02527</a>
+      (still upstream HEAD) by git blob hashes, live reference parity on
+      <code>reviews.html?date=2026-08-26</code>, and fresh official MLB StatsAPI schedule fetches for
+      <code>2026-08-26</code>, <code>2027-02-19</code> and <code>2027-03-25</code> — independently reaching the same
+      conclusions as session <code>e9936287</code> (§18 above). Full record:
+      <a href="audit/alert1-verification-0eea8c12.md">audit/alert1-verification-0eea8c12.md</a> ·
+      <a href="docs/verification-report.md#10-independent-copy-parity--upcoming-game-day-verification--session-0eea8c12-2026-11-25">docs/verification-report.md §10</a>.
+      No site code was changed in this pass: no JS defects were found.
+    </p>
+    <table class="flagged-table">
+      <thead>
+        <tr>
+          <th style="width:62px">#</th>
+          <th>Item / Irregularity</th>
+          <th>Official Source Payload</th>
+          <th>Disposition in <code>Alert1</code></th>
+          <th>Official Source Link</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>H-1</td>
+          <td class="wrap">Copy parity: 19 files byte-identical to upstream <code>5c02527</code>; 5 JS files differ only by previously verified fixes (<code>startTimeTBD</code>→<code>TBD</code>, <code>numOrNull</code> guard, <code>scheduleLoaded</code>, static-host <code>FeedLog</code> guard, scan backoff, <code>officialDate</code>); no file missing or deleted</td>
+          <td class="wrap">Upstream HEAD is still <code>5c02527d3c7a56ea66c698cfabff80a407b6dfd3</code>; live <code>reviews.html?date=2026-08-26</code> matches the reference row-for-row (10 Reviews · 8 Challenges · 2 Umpire · 68 ABS · 1 Boundary · 1 Runs at risk · 15 games · 78 tracked entries)</td>
+          <td class="wrap"><strong>Verified — no action:</strong> the copy runs like the reference with no manual input. Upcoming slates confirmed against the official schedule: <code>2027-02-19</code> 17 games (<code>TBD</code> on <code>868344</code>/<code>868575</code>), <code>2027-03-25</code> 14 games (<code>TBD</code> on <code>854131</code>/<code>852663</code>/<code>853388</code>), offseason <code>2026-11-25</code> offers both <code>2026-10-28</code> and <code>2027-02-19</code> jump buttons. All offline suites pass (69 smoke, 50 links / 8 contracts / 47 jsdom, 5 props, 4 feedlog-provenance, restoration PASS).</td>
+          <td class="wrap"><a href="https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3" target="_blank" rel="noopener">upstream tree 5c02527</a> · <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2026-08-26&amp;fields=dates,date,totalGames,games,gamePk,officialDate,status,teams,team,name" target="_blank" rel="noopener">schedule 2026-08-26</a> · <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2027-03-25&amp;fields=dates,date,totalGames,games,gamePk,gameDate,status,startTimeTBD,detailedState,teams,away,home,team,name" target="_blank" rel="noopener">schedule 2027-03-25</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>H-2</td>
+          <td class="wrap"><code>v1.0.0-stable-checkpoint</code> tag exists only on upstream (<code>ffceec3</code>); this repository has no tags (<code>git ls-remote --tags origin</code> empty), so README's <code>git reset --hard v1.0.0-stable-checkpoint</code> fails here. §3 row above ("Resolved 2026-11-20") refers to the upstream tag.</td>
+          <td class="wrap">Upstream ref <code>refs/tags/v1.0.0-stable-checkpoint</code> → <code>ffceec3e9f24c870b160d40c40ec6d8144c0e47a</code>; Alert1 <code>git tag -l</code> and remote tags are both empty</td>
+          <td class="wrap"><strong>Flagged for your decision:</strong> README copy notice now states the tag is absent here and points here. The tag was not created/pushed (branch-only push rule). To make the README instruction work, create the tag on the verified <code>main</code> commit, e.g. <code>git tag v1.0.0-stable-checkpoint &lt;main-sha&gt; &amp;&amp; git push origin v1.0.0-stable-checkpoint</code> — or leave it flagged.</td>
+          <td class="wrap"><a href="https://github.com/snapquast73-boop/LIVPBP/tree/v1.0.0-stable-checkpoint" target="_blank" rel="noopener">upstream tag v1.0.0-stable-checkpoint</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/README.md" target="_blank" rel="noopener">README copy notice</a></td>
+          <td class="status-flag">Flagged — needs your decision</td>
+        </tr>
+        <tr>
+          <td>H-3</td>
+          <td class="wrap">Reference renders bogus <code>4:33 AM</code>/<code>6:33 AM</code> start times for <code>startTimeTBD</code> games on <code>2027-03-25</code>; this copy renders <code>TBD</code></td>
+          <td class="wrap">Official payload: <code>854131</code> <code>2027-03-25T08:33:00Z</code>, <code>852663</code>/<code>853388</code> <code>2027-03-25T10:33:00Z</code>, all <code>startTimeTBD: true</code> (dummy timestamps, not real start times)</td>
+          <td class="wrap"><strong>Intentional improvement over the reference (live-verified):</strong> <code>scoreboard.js</code>/<code>game.js</code> render <code>TBD</code> whenever <code>status.startTimeTBD === true</code>. No action; recorded so the difference from the reference is not mistaken for a copy error.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2027-03-25&amp;fields=dates,games,gamePk,gameDate,status,startTimeTBD" target="_blank" rel="noopener">schedule 2027-03-25 (startTimeTBD)</a> · <a href="https://kanlerxz87-cyber.github.io/Alert1/?date=2027-03-25" target="_blank" rel="noopener">Alert1 ?date=2027-03-25</a></td>
+          <td class="status-ok">Verified improvement</td>
+        </tr>
+        <tr>
+          <td>H-4</td>
+          <td class="wrap">Arena branch convention deviation (<code>arena/0eea8c12-alert1</code> instead of <code>session-&lt;id&gt;/&lt;task&gt;</code>) — inherited from all prior sessions</td>
+          <td class="wrap">Session is fixed to one branch and may not create/push other branches; integration is a PR from that branch into <code>main</code></td>
+          <td class="wrap"><strong>Flagged (no action):</strong> deviation published here and in <code>COORDINATION.md</code> branch note. Claim for this session was committed and pushed before any other work (<code>89e4706</code>).</td>
+          <td class="wrap"><a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/COORDINATION.md" target="_blank" rel="noopener">COORDINATION.md</a></td>
+          <td class="status-flag">Flagged — inherited</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>20. Line-by-line upcoming exhibition &amp; feed/live verification (session <code>da098af9</code>, 2026-11-25)</h2>
+    <p style="color:var(--muted);font-size:13px">
+      Session <code>da098af9</code> reviewed every repository file line by line against
+      <a href="https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3" target="_blank" rel="noopener">snapquast73-boop/LIVPBP @ 5c02527</a>
+      and verified all 15 <code>2026-08-26</code> games (all 10 non-ABS review plays including chunked <code>823180:57:p:MA</code>
+      plus official <code>gameData.review</code> and <code>gameData.absChallenges</code> counters) and upcoming 2027 slates
+      (<code>2027-02-19</code>, <code>2027-03-21</code>..<code>2027-03-25</code>) directly against <code>statsapi.mlb.com</code>.
+      Full report: <a href="audit/da098af9-verification-2026-11-25.md">audit/da098af9-verification-2026-11-25.md</a>.
+    </p>
+    <table class="flagged-table">
+      <thead>
+        <tr>
+          <th style="width:62px">#</th>
+          <th>Item / Irregularity</th>
+          <th>Official Source Payload</th>
+          <th>Disposition in <code>Alert1</code></th>
+          <th>Official Source Link</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>DA-F1</td>
+          <td class="wrap">Upcoming 2027 Spring Training / exhibition games against non-MLB clubs (<code>gameType: "E"</code>) render 3-letter name prefixes instead of official club <code>abbreviation</code> values (e.g. <code>2027-02-19</code> <code>gamePk=868575</code> Northeastern Huskies <code>team.id=343</code> renders <code>NOR</code> instead of official <code>NEU</code>; <code>2027-03-22</code> <code>gamePk=872350</code> St. Paul Saints <code>team.id=1960</code> renders <code>ST.</code>)</td>
+          <td class="wrap"><code>/api/v1/teams/343</code> returns <code>{"id":343,"name":"Northeastern Huskies","abbreviation":"NEU","sport":{"id":22}}</code>; <code>API.teams()</code> queries <code>sportId=1</code> only (30 MLB clubs) and <code>API.schedule()</code> omits <code>hydrate=team</code>, matching upstream <code>LIVPBP</code> <code>assets/js/api.js</code> byte-for-byte</td>
+          <td class="wrap"><strong>Flagged — upstream parity preserved:</strong> full official team names render accurately; <code>api.js</code> left byte-identical to upstream <code>LIVPBP</code> and regression-covered in <code>tests/da098af9-upcoming-and-parity-test.mjs</code>.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/teams/343" target="_blank" rel="noopener">teams/343</a> · <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;startDate=2027-02-19&amp;endDate=2027-03-24&amp;gameType=E&amp;hydrate=team" target="_blank" rel="noopener">2027 exhibitions</a></td>
+          <td class="status-flag">Flagged — upstream parity</td>
+        </tr>
+        <tr>
+          <td>DA-F2</td>
+          <td class="wrap">Generic MLB review codes <code>MX</code> ("Manager challenge") and <code>NX</code> ("Umpire review") in <code>/api/v1/reviewReasons</code> omit a specific play-type reason, and <code>playByPlay</code> / <code>feed/live</code> store only post-play <code>awayScore</code>/<code>homeScore</code></td>
+          <td class="wrap"><code>/api/v1/reviewReasons</code> entries for <code>MX</code> and <code>NX</code> have no sub-reason; <code>allPlays[57].about</code> in <code>823180</code> stores post-play <code>awayScore: 3, homeScore: 6</code> without a separate pre-ruling score field</td>
+          <td class="wrap"><strong>Verified blank (never inferred):</strong> <code>reviews.js</code> maps <code>MX</code>/<code>NX</code> <code>reason</code> to <code>null</code> (rendering blank) and leaves unconfirmed pre-ruling scores blank in audit tables.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/game/823180/playByPlay" target="_blank" rel="noopener">823180 playByPlay</a> · <a href="https://statsapi.mlb.com/api/v1/eventTypes" target="_blank" rel="noopener">eventTypes</a></td>
+          <td class="status-ok">Verified blank</td>
+        </tr>
+        <tr>
+          <td>DA-F3</td>
+          <td class="wrap">Upcoming scheduled game feeds (e.g. <code>gamePk=854131</code> on <code>2027-03-25</code>) contain 40-man <code>liveData.boxscore.teams.*.players</code> entries with <code>person: { id }</code> and no <code>fullName</code> under <code>API.gameFeed</code>'s <code>fields</code> filter before lineups are posted, and <code>game.js</code> <code>scoring_change</code> cards omit a direct <code>playByPlay</code> anchor (present on <code>reviews.html</code>)</td>
+          <td class="wrap"><code>/api/v1.1/game/854131/feed/live</code> has <code>batters: []</code>, <code>pitchers: []</code>, <code>allPlays: []</code> while <code>status.abstractGameState === "Preview"</code></td>
+          <td class="wrap"><strong>Flagged — non-blocking:</strong> <code>game.js</code> iterates <code>batters</code>/<code>pitchers</code> (empty pregame) and renders clean empty-state notices with zero errors or fabricated stats; <code>reviews.html</code> provides the direct <code>playByPlay</code> link on every row.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1.1/game/854131/feed/live" target="_blank" rel="noopener">854131 feed/live</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/game.js" target="_blank" rel="noopener">assets/js/game.js</a></td>
+          <td class="status-ok">Flagged — non-blocking</td>
+        </tr>
+        <tr>
+          <td>DA-F4</td>
+          <td class="wrap">Session <code>da098af9</code> branch name is fixed by Arena sandbox to <code>arena/da098af9-alert1</code> rather than <code>session-da098af9/&lt;task&gt;</code></td>
+          <td class="wrap">Platform branch policy requires committing, pushing, and opening the PR exclusively from <code>arena/da098af9-alert1</code></td>
+          <td class="wrap"><strong>Disclosed:</strong> task claim committed and pushed first (<code>86d9789</code>) on <code>arena/da098af9-alert1</code> before audit/test edits.</td>
+          <td class="wrap"><a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/COORDINATION.md" target="_blank" rel="noopener">COORDINATION.md</a></td>
+          <td class="status-flag">Flagged — inherited</td>
+        </tr>
+      </tbody>
+    </table>
+
 
   </main>
 

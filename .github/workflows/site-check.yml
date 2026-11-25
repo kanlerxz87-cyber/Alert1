@@ -28,3 +28,4 @@ jobs:
       - run: node tests/run-all.mjs
       - run: node tests/props-provenance-test.mjs
       - run: node tests/alert1-feedlog-and-provenance-test.mjs
+      - run: node tests/da098af9-upcoming-and-parity-test.mjs
