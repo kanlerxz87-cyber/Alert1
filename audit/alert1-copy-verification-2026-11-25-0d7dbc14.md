@@ -27,14 +27,14 @@ Verify the copied Alert1 repo is working like the LIVPBP reference for upcoming 
 
 ## Local checks run
 
-| Command | Result |
-|---|---|
-| `npm ci --ignore-scripts` | OK (0 vulnerabilities) |
-| `npm test` (`node tools/smoke-test.mjs`) | **69 passed, 0 failed** |
-| `node tests/run-all.mjs` | **PASS** (syntax, 50 local refs, 8 contract bindings, 47 jsdom checks) |
-| `node tests/props-provenance-test.mjs` | **5 passed, 0 failed** |
-| `node tests/alert1-feedlog-and-provenance-test.mjs` | **4 passed, 0 failed** |
-| `node tools/restoration-check.mjs` | **ALL CHECKS PASSED** |
+| Command | Result | Source |
+|---|---|---|
+| `npm ci --ignore-scripts` | OK (0 vulnerabilities) | https://github.com/kanlerxz87-cyber/Alert1/blob/main/package-lock.json |
+| `npm test` (`node tools/smoke-test.mjs`) | **69 passed, 0 failed** | https://github.com/kanlerxz87-cyber/Alert1/blob/main/tools/smoke-test.mjs |
+| `node tests/run-all.mjs` | **PASS** (syntax, 50 local refs, 8 contract bindings, 47 jsdom checks) | https://github.com/kanlerxz87-cyber/Alert1/blob/main/tests/run-all.mjs |
+| `node tests/props-provenance-test.mjs` | **5 passed, 0 failed** | https://github.com/kanlerxz87-cyber/Alert1/blob/main/tests/props-provenance-test.mjs |
+| `node tests/alert1-feedlog-and-provenance-test.mjs` | **4 passed, 0 failed** | https://github.com/kanlerxz87-cyber/Alert1/blob/main/tests/alert1-feedlog-and-provenance-test.mjs |
+| `node tools/restoration-check.mjs` | **ALL CHECKS PASSED** | https://github.com/kanlerxz87-cyber/Alert1/blob/main/tools/restoration-check.mjs |
 
 ## Findings
 

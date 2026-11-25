@@ -1527,6 +1527,62 @@ node server.mjs                  # optional persistence backend (feed log + SSE)
         </tr>
       </tbody>
     </table>
+
+    <h2>22. Line-by-line upcoming exhibition &amp; feed/live verification (session <code>da098af9</code>, 2026-11-25)</h2>
+    <p style="color:var(--muted);font-size:13px">
+      Session <code>da098af9</code> reviewed every repository file line by line against
+      <a href="https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3" target="_blank" rel="noopener">snapquast73-boop/LIVPBP @ 5c02527</a>
+      and verified all 15 <code>2026-08-26</code> games (all 10 non-ABS review plays including chunked <code>823180:57:p:MA</code>
+      plus official <code>gameData.review</code> and <code>gameData.absChallenges</code> counters) and upcoming 2027 slates
+      (<code>2027-02-19</code>, <code>2027-03-21</code>..<code>2027-03-25</code>) directly against <code>statsapi.mlb.com</code>.
+      Full report: <a href="audit/da098af9-verification-2026-11-25.md">audit/da098af9-verification-2026-11-25.md</a>.
+    </p>
+    <table class="flagged-table">
+      <thead>
+        <tr>
+          <th style="width:62px">#</th>
+          <th>Item / Irregularity</th>
+          <th>Official Source Payload</th>
+          <th>Disposition in <code>Alert1</code></th>
+          <th>Official Source Link</th>
+          <th style="width:128px">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>DA-F1</td>
+          <td class="wrap">Upcoming 2027 Spring Training / exhibition games against non-MLB clubs (<code>gameType: "E"</code>) in unhydrated <code>API.schedule</code> / <code>API.gameFeed</code> responses omit <code>team.abbreviation</code> unless hydrated (e.g. <code>2027-02-19</code> <code>gamePk=868575</code> Northeastern Huskies <code>team.id=343</code> official <code>NEU</code> vs unhydrated fallback <code>NOR</code>; <code>2027-03-22</code> <code>gamePk=872350</code> St. Paul Saints <code>team.id=1960</code> official <code>STP</code> vs unhydrated fallback <code>ST.</code>)</td>
+          <td class="wrap"><code>/api/v1/teams/343</code> returns <code>{"id":343,"name":"Northeastern Huskies","abbreviation":"NEU","sport":{"id":22}}</code>; <code>API.schedule()</code> omits <code>hydrate=team</code> and <code>API.gameFeed()</code> omits <code>abbreviation</code> from <code>fields</code>, matching upstream <code>LIVPBP</code> <code>assets/js/api.js</code> byte-for-byte</td>
+          <td class="wrap"><strong>Flagged — upstream <code>api.js</code> parity preserved:</strong> full official team names render accurately; when <code>team.abbreviation</code> is present, <code>UI.abbr</code> (S15-1 above) uses it, and when omitted in unhydrated schedule payloads it falls back cleanly to the 3-letter prefix (regression-covered in <code>tests/da098af9-upcoming-and-parity-test.mjs</code>).</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/teams/343" target="_blank" rel="noopener">teams/343</a> · <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;startDate=2027-02-19&amp;endDate=2027-03-24&amp;gameType=E&amp;hydrate=team" target="_blank" rel="noopener">2027 exhibitions</a></td>
+          <td class="status-flag">Flagged — upstream parity</td>
+        </tr>
+        <tr>
+          <td>DA-F2</td>
+          <td class="wrap">Generic MLB review codes <code>MX</code> ("Manager challenge") and <code>NX</code> ("Umpire review") in <code>/api/v1/reviewReasons</code> omit a specific play-type reason, and <code>playByPlay</code> / <code>feed/live</code> store only post-play <code>awayScore</code>/<code>homeScore</code></td>
+          <td class="wrap"><code>/api/v1/reviewReasons</code> entries for <code>MX</code> and <code>NX</code> have no sub-reason; <code>allPlays[57].about</code> in <code>823180</code> stores post-play <code>awayScore: 3, homeScore: 6</code> without a separate pre-ruling score field</td>
+          <td class="wrap"><strong>Verified blank (never inferred):</strong> <code>reviews.js</code> maps <code>MX</code>/<code>NX</code> <code>reason</code> to <code>null</code> (rendering blank) and leaves unconfirmed pre-ruling scores blank in audit tables.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/game/823180/playByPlay" target="_blank" rel="noopener">823180 playByPlay</a> · <a href="https://statsapi.mlb.com/api/v1/eventTypes" target="_blank" rel="noopener">eventTypes</a></td>
+          <td class="status-ok">Verified blank</td>
+        </tr>
+        <tr>
+          <td>DA-F3</td>
+          <td class="wrap">Upcoming scheduled game feeds (e.g. <code>gamePk=854131</code> on <code>2027-03-25</code>) contain 40-man <code>liveData.boxscore.teams.*.players</code> entries with <code>person: { id }</code> and no <code>fullName</code> under <code>API.gameFeed</code>'s <code>fields</code> filter before lineups are posted, and <code>game.js</code> <code>scoring_change</code> cards omit a direct <code>playByPlay</code> anchor (present on <code>reviews.html</code>)</td>
+          <td class="wrap"><code>/api/v1.1/game/854131/feed/live</code> has <code>batters: []</code>, <code>pitchers: []</code>, <code>allPlays: []</code> while <code>status.abstractGameState === "Preview"</code></td>
+          <td class="wrap"><strong>Flagged — non-blocking:</strong> <code>game.js</code> iterates <code>batters</code>/<code>pitchers</code> (empty pregame) and renders clean empty-state notices with zero errors or fabricated stats; <code>reviews.html</code> provides the direct <code>playByPlay</code> link on every row.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1.1/game/854131/feed/live" target="_blank" rel="noopener">854131 feed/live</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/game.js" target="_blank" rel="noopener">assets/js/game.js</a></td>
+          <td class="status-ok">Flagged — non-blocking</td>
+        </tr>
+        <tr>
+          <td>DA-F4</td>
+          <td class="wrap">Session <code>da098af9</code> branch name is fixed by Arena sandbox to <code>arena/da098af9-alert1</code> rather than <code>session-da098af9/&lt;task&gt;</code></td>
+          <td class="wrap">Platform branch policy requires committing, pushing, and opening the PR exclusively from <code>arena/da098af9-alert1</code></td>
+          <td class="wrap"><strong>Disclosed:</strong> task claim committed and pushed first (<code>86d9789</code>) on <code>arena/da098af9-alert1</code> before audit/test edits.</td>
+          <td class="wrap"><a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/COORDINATION.md" target="_blank" rel="noopener">COORDINATION.md</a></td>
+          <td class="status-flag">Flagged — inherited</td>
+        </tr>
+      </tbody>
+    </table>
   </main>
 
   <footer class="site-footer">

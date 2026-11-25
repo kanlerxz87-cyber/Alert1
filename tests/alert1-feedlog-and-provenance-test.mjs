@@ -174,6 +174,9 @@ await check('Every table row in flagged.html and active Alert1 documentation/aud
     'audit/36284656-pages-delivery-verification.md',
     'audit/62e7077f-independent-verification.md',
     'audit/alert1-session-15b89941-verification.md',
+    'audit/alert1-copy-verification-2026-11-25-0d7dbc14.md',
+    'audit/5e124cc4-verification.md',
+    'audit/da098af9-verification-2026-11-25.md',
   ];
   for (const rel of mdFiles) {
     const txt = fs.readFileSync(path.join(ROOT, rel), 'utf8');
