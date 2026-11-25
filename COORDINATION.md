@@ -4,9 +4,29 @@ Repo: `kanlerxz87-cyber/Alert1` · Site: https://kanlerxz87-cyber.github.io/Aler
 Reference: https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26
 Copied source: https://github.com/snapquast73-boop/LIVPBP @ `5c02527d3c7a56ea66c698cfabff80a407b6dfd3`
 
-Updated 2026-11-25 by session **`5e124cc4`** (branch `arena/5e124cc4-alert1`, integrated `origin/main` @ `3e611fe`) preserving all prior parallel-session records (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`, `fae80285`, `e9936287`, `f0bea661`).
+Updated 2026-11-25 by session **`5e124cc4`** (branch `arena/5e124cc4-alert1`, merged `origin/main` through `12afa36` / PR #10) preserving all prior parallel-session records (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`, `fae80285`, `e9936287`, `f0bea661`, `0eea8c12`).
 
-## Active task board — session `e9936287` (2026-11-25)
+## Active task board — session `5e124cc4` (2026-11-25)
+
+Claimed before work began. Arena fixes this session to branch `arena/5e124cc4-alert1`
+(off `e22ec1d`), so the brief's `session-<id>/<task>` branch convention cannot be used; work and
+the final PR stay on this branch. No other session's claimed file scope is edited.
+
+| ID | Task | Status | Owner | File scope | Notes / Official Source |
+|---|---|---|---|---|---|
+| V-1 | Independent line-by-line re-verification of copied source against upstream commit and reference replay page; official-MLB source links for every checked row; publish any new irregularities | `done` | `5e124cc4` | `audit/5e124cc4-verification.md`, `flagged.html`, `docs/verification-report.md` | 40 upstream blobs / 43 local blobs (21 identical, 19 prior-session fixes, 3 local-only); all 10 non-ABS `2026-08-26` review IDs re-read from official PBP; flagged §20 V-1..V-6. Upstream: https://api.github.com/repos/snapquast73-boop/LIVPBP/commits/5c02527d3c7a56ea66c698cfabff80a407b6dfd3 ; reference: https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26 |
+| V-2 | Verify upcoming-game-day behavior on the live static site (no manual input), fix any defects found and add regression coverage | `done` | `5e124cc4` | `assets/js/*.js`, `tests/*`, `tools/*` only if defects are found | No new defect found; live offseason jump (`2027-02-19`, 17 games), Opening Day (`2027-03-25`, 14 games, 3 `startTimeTBD`) and game `854131` verified. Official schedule: https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-11-25&endDate=2027-05-24&fields=dates,date,totalGames |
+| V-3 | Final integration: run every check, PR `arena/5e124cc4-alert1` -> `main`, merge autonomously, verify Pages deployment + live pages, record PR/merge/deploy evidence | `in progress` | `5e124cc4` | `COORDINATION.md`, `.github/workflows/*`, `README.md`, `docs/verification-report.md` | Checks: https://github.com/kanlerxz87-cyber/Alert1/actions ; live Pages: https://kanlerxz87-cyber.github.io/Alert1/ |
+
+## Active task board — session `0eea8c12` (2026-11-25)
+
+| ID | Task | Status | Owner | File scope | Notes / Official Source |
+|---|---|---|---|---|---|
+| H-1 | Independent copy-parity + upcoming-game-day verification: upstream `5c02527` byte-parity, live reference parity on `reviews.html?date=2026-08-26`, official MLB StatsAPI spot-checks (`2026-08-26` 15 games, `2027-02-19` Spring Training, `2027-03-25` Opening Day incl. `startTimeTBD`), offline suites | `done` | `0eea8c12` | `audit/alert1-verification-0eea8c12.md`, `docs/verification-report.md`, `COORDINATION.md` | 19 files byte-identical; 5 JS differ only by verified fixes; live parity identical (10/8/2/68/1/0/1, 15 games, 78 entries); official `2027-02-19`=17, `2027-03-25`=14 with `TBD` on `startTimeTBD` games only; all suites pass (69, 50/8/47, 5, 4, restoration PASS) — https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-08-26 |
+| H-2 | Correct the `v1.0.0-stable-checkpoint` tag record: tag exists only on upstream (`ffceec3`), absent in this repo (`git ls-remote --tags origin` empty), so README's `git reset --hard` instruction fails here; update README copy notice + `flagged.html` §19 | `done` | `0eea8c12` | `README.md`, `flagged.html`, `docs/verification-report.md` | README copy notice now states tag absent here; `flagged.html` §19 H-2 flagged for user decision (tag not created/pushed, branch-only push rule); corroborated by `e9936287` E-F3 — https://github.com/snapquast73-boop/LIVPBP/tree/v1.0.0-stable-checkpoint |
+| H-3 | Run all checks, open PR from `arena/0eea8c12-alert1` → `main`, merge autonomously, verify live GitHub Pages deployment, record PR/merge result | `in progress` | `0eea8c12` | `COORDINATION.md`, `tests/alert1-feedlog-and-provenance-test.mjs` | PR #10 opened; CI green; merged `origin/main` (PR #9 + PR #12 + PR #11) to resolve conflicts — https://github.com/kanlerxz87-cyber/Alert1/pull/10 |
+
+## Preserved board — session `e9936287` (PR #9 @ `594f46b` & PR #12 @ `734791a`)
 
 | ID | Task | Status | Owner | File scope | Notes / Official Source |
 |---|---|---|---|---|---|
@@ -21,22 +41,10 @@ Updated 2026-11-25 by session **`5e124cc4`** (branch `arena/5e124cc4-alert1`, in
 Arena fixes each session to one branch and forbids creating/pushing other branches, so the
 brief's `session-<id>/<task>` branch convention cannot be followed literally. Each session's
 work stays on its assigned branch only (`arena/db1b5438-alert1`, `arena/c394a038-alert1`,
-`arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`, `arena/e9936287-alert1`, `arena/f0bea661-alert1`, `arena/5e124cc4-alert1`); integration is a pull request from that branch
-into `main`. The deviation is published on [`flagged.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) (C-7 / A1-9 / F-5 / V-2).
+`arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`, `arena/e9936287-alert1`, `arena/f0bea661-alert1`, `arena/0eea8c12-alert1`, `arena/5e124cc4-alert1`); integration is a pull request from that branch
+into `main`. The deviation is published on [`flagged.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) (C-7 / A1-9 / F-5 / H-4 / V-2).
 
-## Active task board — session `5e124cc4` (2026-11-25)
-
-Claimed before work began. Arena fixes this session to branch `arena/5e124cc4-alert1`
-(off `e22ec1d`), so the brief's `session-<id>/<task>` branch convention cannot be used; work and
-the final PR stay on this branch. No other session's claimed file scope is edited.
-
-| ID | Task | Status | Owner | File scope | Notes / Official Source |
-|---|---|---|---|---|---|
-| V-1 | Independent line-by-line re-verification of copied source against upstream commit and reference replay page; official-MLB source links for every checked row; publish any new irregularities | `done` | `5e124cc4` | `audit/5e124cc4-verification.md`, `flagged.html`, `docs/verification-report.md` | 40 upstream blobs / 43 local blobs (21 identical, 19 prior-session fixes, 3 local-only); all 10 non-ABS `2026-08-26` review IDs re-read from official PBP; flagged §19 V-1..V-6. Upstream: https://api.github.com/repos/snapquast73-boop/LIVPBP/commits/5c02527d3c7a56ea66c698cfabff80a407b6dfd3 ; reference: https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26 |
-| V-2 | Verify upcoming-game-day behavior on the live static site (no manual input), fix any defects found and add regression coverage | `done` | `5e124cc4` | `assets/js/*.js`, `tests/*`, `tools/*` only if defects are found | No new defect found; live offseason jump (`2027-02-19`, 17 games), Opening Day (`2027-03-25`, 14 games, 3 `startTimeTBD`) and game `854131` verified. Official schedule: https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-11-25&endDate=2027-05-24&fields=dates,date,totalGames |
-| V-3 | Final integration: run every check, PR `arena/5e124cc4-alert1` -> `main`, merge autonomously, verify Pages deployment + live pages, record PR/merge/deploy evidence | `in progress` | `5e124cc4` | `COORDINATION.md`, `.github/workflows/*`, `README.md`, `docs/verification-report.md` | Checks: https://github.com/kanlerxz87-cyber/Alert1/actions ; live Pages: https://kanlerxz87-cyber.github.io/Alert1/ |
-
-## Active task board — session `f0bea661` (2026-11-25)
+## Preserved board — session `f0bea661` (PR #11 @ `3e611fe`)
 
 | ID | Task | Status | Owner | File scope | Notes / Official Source |
 |---|---|---|---|---|---|
@@ -48,7 +56,7 @@ the final PR stay on this branch. No other session's claimed file scope is edite
 - Retrieved the exact upstream archive at [`5c02527d3c7a56ea66c698cfabff80a407b6dfd3`](https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3) and byte-compared 11 specified runtime/site files; 6 were identical and 5 contained documented follow-up changes. Findings: [`audit/independent-review-2026-11-25.md`](audit/independent-review-2026-11-25.md).
 - `npm ci` (0 vulnerabilities), `npm test` (69/69), initial `node tests/run-all.mjs` (50 local refs, 8 bindings, 47 DOM checks), `node tests/props-provenance-test.mjs` (5/5), `node tests/alert1-feedlog-and-provenance-test.mjs` (4/4), and `node tools/restoration-check.mjs` all passed. After integrating PR #9 and resolving the parallel edit, re-ran provenance/site/restoration suites successfully; `run-all.mjs` now checks 52 local refs, 8 bindings, 47 DOM checks. Current checks establish local behavior and HTTPS-link presence, not row-by-row official source validation. Added F-6 to [`flagged.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) to disclose that scope limit. No MLB StatsAPI request was made in this pass because `statsapi.mlb.com` is outside the sandbox's allowed network hosts.
 
-## Active task board — session `fae80285` (2026-11-25)
+## Preserved board — session `fae80285` (2026-11-25)
 
 | ID | Task | Status | Owner | File scope | Notes / Official Source |
 |---|---|---|---|---|---|
@@ -67,8 +75,12 @@ the final PR stay on this branch. No other session's claimed file scope is edite
 | D-4 | Run all checks, open PR from `arena/df7b58c1-alert1` → `main`, merge autonomously, verify live Pages deployment (`2026-08-26`, `2027-03-25`, offseason, `game.html`, `flagged.html`, `404.html`), and record PR/merge/deploy evidence | `done` | `df7b58c1` | `COORDINATION.md` | PR #5 merged (`4369903`); `Site checks` (`45700146829`), `pages build and deployment` (`45700146423`), and `Published Pages delivery` (`45700231433`) all succeeded; verified live `reviews.html?date=2026-08-26`, `/?date=2027-03-25`, `game.html?gamePk=854131`, `game.html?gamePk=823180`, and `flagged.html` §16 — https://github.com/kanlerxz87-cyber/Alert1/pull/6 |
 
 ## Parallel-session conflict resolution log
+- **2026-11-25 (`5e124cc4`, first integration merge):** While PR #14 was open, `origin/main` advanced from `e22ec1d` to `3e611fe` via PRs #9/#11/#12 (sessions `e9936287`, `f0bea661`). Merged `origin/main` with `git merge --no-ff`; the only conflict was in `COORDINATION.md`, where both the complete `f0bea661` G-1 board/session log and this session's V-1..V-3 board were preserved side-by-side. `flagged.html` auto-merged with `e9936287` §18 and F-6 intact; this session's section was renumbered to §19 (later §20). No other-session work was discarded.
+- **2026-11-25 (`5e124cc4`, second integration merge):** `origin/main` advanced from `3e611fe` to `12afa36` via PR #10 (session `0eea8c12`). Merged with `git merge --no-ff`; conflicts in `COORDINATION.md`, `flagged.html`, `docs/verification-report.md` and the provenance test were resolved by taking `main` as the base and re-adding this session's V-1..V-3 board, audit links and §20 flagged section. Session `0eea8c12`'s §19/H-1..H-4 and §10 record, `f0bea661`'s F-6, and `e9936287`'s §18/E-1..E-F4 were preserved verbatim. A subsequent `git pull --rebase` attempted to replay already-merged commits and was aborted to protect the explicit merge; the branch tip remained the merge commit. All suites re-run.
 
-- **2026-11-25 (`5e124cc4`):** While PR #14 was open, `origin/main` advanced from `e22ec1d` to `3e611fe` via PRs #9/#11/#12 (sessions `e9936287`, `f0bea661`). Merged `origin/main` into this branch with `git merge --no-ff` (no force-push, no branch switch). The only conflict was in `COORDINATION.md`; both the complete `f0bea661` G-1 board/session log and the `5e124cc4` V-1..V-3 board were preserved verbatim side-by-side. `flagged.html` auto-merged: the earlier §18 (session `e9936287`) and F-6 row were retained, and this session's section was renumbered to §19 with all internal references updated. Both distinct audit files were retained. All local suites were re-run after resolution.
+- **2026-11-25 (`0eea8c12`, PR #10 merges):** While session `0eea8c12` was verifying (branched from `e22ec1d`), parallel sessions `e9936287` (PR #9 `594f46b` + PR #12 `734791a`) and `f0bea661` (PR #11 `3e611fe`) merged into `main`. `gh pr merge 10 --merge` reported merge conflicts in `COORDINATION.md` and `flagged.html` (each session had added an active board and a `flagged.html` §18). Resolved with `git merge --no-ff origin/main` (no force-push): `e9936287`'s board is preserved verbatim as a preserved board and its `flagged.html` §18 (E-1..E-F4) is kept as-is; `f0bea661`'s G-1 board, session log and `flagged.html` §17/F-6 row are kept as-is; `0eea8c12`'s board stays active and its section is renumbered to §19 (H-1..H-4) with references updated in `README.md`, `docs/verification-report.md` §10 and `audit/alert1-verification-0eea8c12.md`. All three sessions independently reached identical conclusions (upstream HEAD still `5c02527`; live parity 10/8/2/68/1/0/1, 15 games, 78 entries; `2027-02-19`=17, `2027-03-25`=14; tag absent here). No other-session work was discarded.
+
+
 - **2026-11-25 (`f0bea661`):** After PR #11 was opened, `origin/main` advanced from `e22ec1d` to `594f46b` via PR #9 (`e9936287`). The first merge attempt for PR #11 reported conflicts; merged `origin/main` into this branch and resolved `COORDINATION.md` by preserving both the completed E-1..E-4 board and G-1/session log. `flagged.html` auto-merged with both prior §18/E-1..E-F4 and this session's §17/F-6 intact; the distinct audits were retained (`audit/alert1-reverify-2026-11-25-e9936287.md` and `audit/independent-review-2026-11-25.md`). No other-session work was discarded. Re-ran provenance, site, and restoration checks after resolution. A subsequent required `git pull --rebase origin arena/f0bea661-alert1` encountered a conflict while replaying PR #9's already-merged coordination claim (79cdf96); aborted that history rewrite to preserve the explicit integration merge and will push it as a fast-forward from the remote branch tip.
 - **2026-11-25 (`f0bea661`, follow-up):** After PR #12 (`e9936287`) added the PR #9 deployment record on `main` @ `734791a`, a second merge conflict occurred only on the E-4 row in `COORDINATION.md`; combined the richer check/build/Pages/live URL evidence from both sides. A required `git pull --rebase origin arena/f0bea661-alert1` then conflicted while replaying that same E-4 update (`23d0d6f`); aborted the rebase to preserve the explicit merge and combined row, and will push from the remote branch tip as a fast-forward. All other session changes remained intact; no force push or branch switch was performed.
 - **2026-11-25 (`fae80285`):** Branched `arena/fae80285-alert1` from `6b0e47c` (PR #1), pushed initial `COORDINATION.md` claim (`8ad81d0`), and restricted initial implementation commits strictly to non-overlapping files (`assets/js/feed-log.js`, `audit/alert1-live-verification-2026-11-25.md`, `audit/reference-parity-2026-11-22.md`, `tests/alert1-feedlog-and-provenance-test.mjs`) while parallel sessions `c394a038` (PR #2, PR #4), `8c1d3368` (PR #3), and `df7b58c1` (PR #5, PR #6) completed and merged to `main` (`a332f09`). Merged `origin/main` cleanly via `git merge --no-ff origin/main` (no force-push); conflicts in `COORDINATION.md` were resolved by preserving 100% of all four sessions' boards and deployment logs verbatim alongside `fae80285`'s active board.
