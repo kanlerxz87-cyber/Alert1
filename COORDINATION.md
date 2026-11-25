@@ -4,17 +4,26 @@ Repo: `kanlerxz87-cyber/Alert1` · Site: https://kanlerxz87-cyber.github.io/Aler
 Reference: https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26
 Copied source: https://github.com/snapquast73-boop/LIVPBP @ `5c02527d3c7a56ea66c698cfabff80a407b6dfd3`
 
-Updated 2026-11-25 by session **`fae80285`** (branch `arena/fae80285-alert1`, fast-forwarded to `origin/main` @ `d99fada`) preserving all prior parallel sessions (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`).
+Updated 2026-11-25 by session **`15b89941`** (branch `arena/15b89941-alert1`, branched from `origin/main` @ `e22ec1d`) preserving all prior parallel sessions (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`, `fae80285`).
 
 ## Branch note (Arena sandbox restriction)
 
 Arena fixes each session to one branch and forbids creating/pushing other branches, so the
 brief's `session-<id>/<task>` branch convention cannot be followed literally. Each session's
 work stays on its assigned branch only (`arena/db1b5438-alert1`, `arena/c394a038-alert1`,
-`arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`); integration is a pull request from that branch
-into `main`. The deviation is published on [`flagged.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) (C-7 / A1-9 / F-5).
+`arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`, `arena/15b89941-alert1`); integration is a pull request from that branch
+into `main`. The deviation is published on [`flagged.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) (C-7 / A1-9 / F-5 / S15-3).
 
-## Active task board — session `fae80285` (2026-11-25)
+## Active task board — session `15b89941` (2026-11-25)
+
+| ID | Task | Status | Owner | File scope | Notes / Official Source |
+|---|---|---|---|---|---|
+| 15-1 | Independent line-by-line audit + live official MLB StatsAPI & GitHub Pages verification (`2026-08-26`, `2026-11-25`, `2027-02-19`, `2027-03-25`, exhibition `868575` NEU @ BOS, Opening Day `854131` CLE @ CHC) | `in progress` | `15b89941` | `audit/alert1-session-15b89941-verification.md`, `flagged.html` | Checking live reference https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26 vs Alert1 and official https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2027-02-19 |
+| 15-2 | Fix `UI.abbr(team)` to preserve official `team.abbreviation` for non-MLB exhibition opponents (`868575` `NEU`) & harden `scoreboard.js` date-switch guards (`sweepStatus`, `loadLog`, single initial fetch) | `in progress` | `15b89941` | `assets/js/ui.js`, `assets/js/scoreboard.js` | Official `feed/live` `868575` returns `abbreviation: "NEU"` for `id: 343`: https://statsapi.mlb.com/api/v1.1/game/868575/feed/live |
+| 15-3 | Add regression checks, verify 100% table-row official source links, and run full test suite (`npm test`, `run-all.mjs`, `restoration-check.mjs`, `props-provenance-test.mjs`, `alert1-feedlog-and-provenance-test.mjs`) | `in progress` | `15b89941` | `tests/alert1-feedlog-and-provenance-test.mjs` | CI workflow: https://github.com/kanlerxz87-cyber/Alert1/blob/main/.github/workflows/site-check.yml |
+| 15-4 | Open PR from `arena/15b89941-alert1` → `main`, merge autonomously, verify live GitHub Pages deployment, and record PR/merge result | `in progress` | `15b89941` | `COORDINATION.md` | Target repo: https://github.com/kanlerxz87-cyber/Alert1 |
+
+## Preserved board — session `fae80285` (PR #7 @ `d99fada` & PR #8 @ `e22ec1d`)
 
 | ID | Task | Status | Owner | File scope | Notes / Official Source |
 |---|---|---|---|---|---|
