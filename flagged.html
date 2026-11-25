@@ -1240,7 +1240,85 @@ node server.mjs                  # optional persistence backend (feed log + SSE)
       </tbody>
     </table>
 
-    <h2>18. Independent line-by-line verification, non-MLB Spring Training abbreviations &amp; scoreboard race guards (session <code>15b89941</code>, 2026-11-25)</h2>
+    <h2>18. Independent re-verification of the copy + upcoming game days (session <code>e9936287</code>, 2026-11-25)</h2>
+    <p style="color:var(--muted);font-size:13px">
+      Session <code>e9936287</code> re-cloned upstream <code>snapquast73-boop/LIVPBP</code> and confirmed its HEAD is still
+      <code>5c02527</code> (pushed 2026-11-22) — no upstream drift since the copy — then compared the live reference and this
+      site side by side on <code>2026-08-26</code> and on upcoming dates. Full line-by-line table:
+      <a href="audit/alert1-reverify-2026-11-25-e9936287.md">audit/alert1-reverify-2026-11-25-e9936287.md</a>.
+    </p>
+    <table class="flagged-table">
+      <thead>
+        <tr>
+          <th style="width:62px">#</th>
+          <th>Item / Irregularity</th>
+          <th>Official Source Payload</th>
+          <th>Disposition in <code>Alert1</code></th>
+          <th>Official Source Link</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>E-1</td>
+          <td class="wrap">Copy parity: upstream HEAD still <code>5c02527</code>; core pages/assets byte-identical; only intentional deviations (404 base path, homepage, static-host <code>FeedLog</code> guard, <code>startTimeTBD</code>, upcoming-date jump)</td>
+          <td class="wrap">GitHub API commits + <code>diff -rq</code> of a fresh clone vs this repo</td>
+          <td class="wrap">No functional change needed; deviations already documented in <a href="COORDINATION.md">COORDINATION.md</a></td>
+          <td class="wrap"><a href="https://api.github.com/repos/snapquast73-boop/LIVPBP/commits" target="_blank" rel="noopener">upstream commits</a> · <a href="https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3" target="_blank" rel="noopener">upstream tree</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>E-2</td>
+          <td class="wrap">Live parity <code>2026-08-26</code>: reference and Alert1 both show 10 reviews / 8 challenges / 2 umpire / 68 ABS / 1 boundary / 0 under review / 1 runs at risk / 15 games / 78 tracked entries, with identical rows and official per-row source links</td>
+          <td class="wrap"><code>schedule?date=2026-08-26</code> <code>totalGames: 15</code>; per-game <code>playByPlay</code> review rows match</td>
+          <td class="wrap">Site runs with zero manual input; row order may differ by scan timing only</td>
+          <td class="wrap"><a href="https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26" target="_blank" rel="noopener">reference feed</a> · <a href="https://kanlerxz87-cyber.github.io/Alert1/reviews.html?date=2026-08-26" target="_blank" rel="noopener">Alert1 feed</a> · <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2026-08-26" target="_blank" rel="noopener">official schedule</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>E-3</td>
+          <td class="wrap">Upcoming game days: <code>2027-02-19</code> (17 games), <code>2027-03-25</code> (14 games, <code>TBD</code> for <code>startTimeTBD</code> games), offseason <code>2026-11-25</code> offers one-click jump to <code>2026-10-28</code> and <code>2027-02-19</code></td>
+          <td class="wrap">Official schedules for both 2027 dates; <code>[-180d,+180d]</code> range query</td>
+          <td class="wrap">No hardcoded dates in <code>assets/js/</code>; dates are <code>?date=</code> driven</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2027-02-19" target="_blank" rel="noopener">2027-02-19</a> · <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2027-03-25" target="_blank" rel="noopener">2027-03-25</a> · <a href="https://kanlerxz87-cyber.github.io/Alert1/?date=2026-11-25" target="_blank" rel="noopener">offseason page</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>E-F1</td>
+          <td class="wrap">Inherited upstream MLB StatsAPI <code>reviewDetails</code> schema quirks on <code>2026-08-26</code>: <code>823506:56:0:MA</code> reason "Pickoff Attempt 1B", <code>823506:19:5:NH</code> reason "Foul", <code>823180:84:p:NF</code> dual-call crew review</td>
+          <td class="wrap">Official <code>playByPlay</code> payloads carry these reason strings verbatim</td>
+          <td class="wrap">Rendered verbatim from the official payload; not corrected or inferred</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/game/823506/playByPlay" target="_blank" rel="noopener">game 823506 playByPlay</a> · <a href="https://statsapi.mlb.com/api/v1/game/823180/playByPlay" target="_blank" rel="noopener">game 823180 playByPlay</a></td>
+          <td class="status-ok">Flagged — do not block</td>
+        </tr>
+        <tr>
+          <td>E-F2</td>
+          <td class="wrap">Optional feed-log persistence server (<code>server.mjs</code> <code>/api/feed-log</code>) is not available on static GitHub Pages</td>
+          <td class="wrap">Static hosting has no server endpoints; <code>isStaticHost()</code> guard prevents failing calls</td>
+          <td class="wrap">Browser local storage is used on Pages; server mode works locally via <code>npm run serve</code></td>
+          <td class="wrap"><a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/feed-log.js" target="_blank" rel="noopener">feed-log.js</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/server.mjs" target="_blank" rel="noopener">server.mjs</a></td>
+          <td class="status-ok">Flagged — do not block</td>
+        </tr>
+        <tr>
+          <td>E-F3</td>
+          <td class="wrap">Upstream <code>v1.0.0-stable-checkpoint</code> tag is not present in this repository</td>
+          <td class="wrap">Tag exists upstream only</td>
+          <td class="wrap">Left blank / flagged; no value invented</td>
+          <td class="wrap"><a href="https://github.com/snapquast73-boop/LIVPBP/tags" target="_blank" rel="noopener">upstream tags</a></td>
+          <td class="status-ok">Flagged — do not block</td>
+        </tr>
+        <tr>
+          <td>E-F4</td>
+          <td class="wrap">Hit-forecast model constants are upstream estimates, not official MLB values</td>
+          <td class="wrap">Season inputs come from official <code>people/{id}/stats</code>; model weights are not published by MLB</td>
+          <td class="wrap">Unconfirmed stats render blank (<code>—</code>), never inferred; every driver row links its official source</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/people/660271/stats?stats=expectedStatistics,season,statSplits,gameLog&amp;group=hitting&amp;sitCodes=vl,vr&amp;season=2026" target="_blank" rel="noopener">people/660271/stats</a></td>
+          <td class="status-ok">Flagged — do not block</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>19. Independent line-by-line verification, non-MLB Spring Training abbreviations &amp; scoreboard race guards (session <code>15b89941</code>, 2026-11-25)</h2>
     <p style="color:var(--muted);font-size:13px">
       Session <code>15b89941</code> independently audited <code>kanlerxz87-cyber/Alert1</code> against upstream
       <code>snapquast73-boop/LIVPBP</code> (<code>5c02527</code>), the live reference deployment, and live
