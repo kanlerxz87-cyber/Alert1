@@ -240,6 +240,10 @@
     var payload = pendingPayloads[date];
     if (!payload) return Promise.resolve(null);
     pendingPayloads[date] = null;
+    if (isStaticHost()) {
+      apiState.checked = true; apiState.available = false;
+      return Promise.resolve(null);
+    }
     if (apiState.checked && !apiState.available) return Promise.resolve(null);
     return serverFetch('/api/feed-log', {
       method: 'POST',
@@ -280,6 +284,11 @@
   /* Live push: the server streams every accepted write to open pages.  Absent
    * on static hosting — the ordinary poll stays the fallback. */
   function openStream(date) {
+    closeStream();
+    if (isStaticHost()) {
+      apiState.checked = true; apiState.available = false;
+      return null;
+    }
     if (typeof global.EventSource !== 'function') return null;
     if (apiState.checked && !apiState.available) return null;
     try {
