@@ -6,7 +6,7 @@ against the [reference replay page](https://snapquast73-boop.github.io/LIVPBP/re
 the [official MLB StatsAPI](https://statsapi.mlb.com), and the [GitHub API](https://api.github.com/repos/kanlerxz87-cyber/Alert1).
 No value below was inferred: where an official payload did not publish a value, it is left blank.
 This record supplements (does not overwrite) the earlier session reports linked from
-[`flagged.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged.html).
+[`flagged-5e124cc4.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged-5e124cc4.html).
 
 ---
 
@@ -75,7 +75,7 @@ object while its official result text describes two reviewed calls.
 
 | ID | Irregularity / caveat | Disposition | Official source |
 | --- | --- | --- | --- |
-| V-1 | Upstream MLB `reviewDetails` prose/schema anomalies F-1..F-3 were re-observed; the original descriptions are preserved verbatim rather than rewritten. | Already published as Flagged; no site code change. | [game/823506/playByPlay](https://statsapi.mlb.com/api/v1/game/823506/playByPlay) · [game/823180/playByPlay](https://statsapi.mlb.com/api/v1/game/823180/playByPlay) · [flagged.html §17 and §21](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) |
+| V-1 | Upstream MLB `reviewDetails` prose/schema anomalies F-1..F-3 were re-observed; the original descriptions are preserved verbatim rather than rewritten. | Already published as Flagged; no site code change. | [game/823506/playByPlay](https://statsapi.mlb.com/api/v1/game/823506/playByPlay) · [game/823180/playByPlay](https://statsapi.mlb.com/api/v1/game/823180/playByPlay) · [standalone Flagged page, V-1](https://kanlerxz87-cyber.github.io/Alert1/flagged-5e124cc4.html) |
 | V-2 | Arena fixes this session to `arena/5e124cc4-alert1`; the brief's `session-<id>/<task>` branch convention cannot be followed. | Documented on the shared board and Flagged page; no other branch created. | [GitHub branch API](https://api.github.com/repos/kanlerxz87-cyber/Alert1/branches/arena/5e124cc4-alert1) · [COORDINATION.md](https://github.com/kanlerxz87-cyber/Alert1/blob/main/COORDINATION.md) |
 | V-3 | StatsAPI `fields` projection of `reviewDetails` without its child keys returns `{}`; this is a query-projection artifact, not missing official data. | Re-queried with `reviewType,isOverturned,challengeTeamId` included; values in §2 come from those complete projections. | [game/823506/playByPlay projected](https://statsapi.mlb.com/api/v1/game/823506/playByPlay?fields=allPlays,atBatIndex,about,playEvents,reviewDetails,reviewType,isOverturned,challengeTeamId) |
 | V-4 | GitHub Pages is static-only, so the optional same-origin feed-log API is intentionally unavailable on the deployed site. | `FeedLog.isStaticHost()` guard prevents failing `/api/feed-log*` calls; local `node server.mjs` retains the API. | [Pages API](https://api.github.com/repos/kanlerxz87-cyber/Alert1/pages) · [feed-log.js](https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/feed-log.js) |
