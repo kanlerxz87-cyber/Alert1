@@ -6,6 +6,16 @@ Copied source: https://github.com/snapquast73-boop/LIVPBP @ `5c02527d3c7a56ea66c
 
 Updated 2026-11-25 by session **`fae80285`** (branch `arena/fae80285-alert1`, fast-forwarded to `origin/main` @ `d99fada`) preserving all prior parallel sessions (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`).
 
+Updated 2026-11-25 by session **`36284656`** (branch `arena/36284656-alert1`, base `e22ec1d`): this session claims ONLY the non-overlapping verification scope H-1..H-3 below. No site code, shared table data, navigation, `flagged.html`, `docs/`, or `tests/` files will be edited; other sessions' claims are untouched.
+
+## Active task board — session `36284656` (2026-11-25)
+
+| ID | Task | Status | Owner | File scope | Notes / Official Source |
+|---|---|---|---|---|---|
+| H-1 | Verify the currently published GitHub Pages revision and that every HTML page/asset and internal link on the published site resolves (no broken links), using the official GitHub Pages API and live Pages URLs | `in progress` | `36284656` | `COORDINATION.md`, new `audit/36284656-pages-delivery-verification.md` | https://api.github.com/repos/kanlerxz87-cyber/Alert1/pages/builds/latest · https://kanlerxz87-cyber.github.io/Alert1/ |
+| H-2 | Independently verify the reference replay page and the official MLB schedule for an upcoming game day; record values only when confirmed by the official source, otherwise leave blank and flag | `unclaimed` | `36284656` | new `audit/36284656-pages-delivery-verification.md` | Reference: https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26 · Official: https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2027-03-25&endDate=2027-03-25 |
+| H-3 | Publish this verification record autonomously (PR → merge → confirm Pages deploy) without modifying any other session's scope | `unclaimed` | `36284656` | `COORDINATION.md`, new `audit/36284656-pages-delivery-verification.md` | Final integration of shared site files remains with the sessions listed above; this task integrates only this audit record |
+
 ## Branch note (Arena sandbox restriction)
 
 Arena fixes each session to one branch and forbids creating/pushing other branches, so the
