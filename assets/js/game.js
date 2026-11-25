@@ -203,13 +203,17 @@
       '</div>';
     }
 
+    var startTimeLabel = status.startTimeTBD
+      ? 'TBD'
+      : (MLB.formatGameTime(feed.gameData.datetime && feed.gameData.datetime.dateTime) || 'TBD');
+
     var centerBits = ['<div class="status-main ' + meta.cls + '">' + UI.esc(meta.label) + '</div>'];
     if (meta.live && ls.currentInning) {
       centerBits.push('<div class="status-sub">' + UI.esc((ls.inningState || '') + ' ' + ls.currentInning) + '</div>');
     } else if (meta.final) {
       centerBits.push('<div class="status-sub">Final</div>');
     } else if (status.detailedState) {
-      centerBits.push('<div class="status-sub">' + UI.esc(MLB.formatGameTime(feed.gameData.datetime && feed.gameData.datetime.dateTime)) + '</div>');
+      centerBits.push('<div class="status-sub">' + UI.esc(startTimeLabel) + '</div>');
     }
 
     $('header-away').innerHTML = sideBlock(away);
@@ -226,7 +230,9 @@
     if (feed.gameData.game && feed.gameData.game.seriesGameNumber && feed.gameData.game.gamesInSeries) {
       metaBits.push('Game ' + feed.gameData.game.seriesGameNumber + ' of ' + feed.gameData.game.gamesInSeries);
     }
-    if (feed.gameData.datetime && feed.gameData.datetime.dateTime) {
+    if (status.startTimeTBD) {
+      metaBits.push('🕒 Start time TBD');
+    } else if (feed.gameData.datetime && feed.gameData.datetime.dateTime) {
       metaBits.push('🕒 ' + new Date(feed.gameData.datetime.dateTime).toLocaleString());
     }
     $('header-meta').innerHTML = metaBits.map(function (b) { return '<span>' + UI.esc(b) + '</span>'; }).join('');
@@ -251,9 +257,13 @@
     var last = lastCompletedPlay(feed);
 
     if (!status.live && !status.final) {
+      var rawStatus = feed.gameData.status || {};
+      var firstPitch = rawStatus.startTimeTBD
+        ? 'TBD'
+        : (MLB.formatGameTime(feed.gameData.datetime && feed.gameData.datetime.dateTime) || 'TBD');
       wrap.innerHTML = '<div class="live-card"><h4>Pregame</h4><div class="last-play">' +
         UI.esc(status.label) + ' — first pitch ' +
-        UI.esc(MLB.formatGameTime(feed.gameData.datetime && feed.gameData.datetime.dateTime) || 'TBD') + '</div></div>';
+        UI.esc(firstPitch) + '</div></div>';
       return;
     }
 
@@ -857,9 +867,13 @@
     return bits.join(' · ');
   }
 
-  /* 125 ms official-status watcher: paints the banner before the full feed lands. */
+  /* 125 ms official-status watcher: paints the banner before the full feed lands.
+   * Only active while the game is Live (or before the first feed resolves) so
+   * Final / Preview games do not poll at 8 req/s. */
   function watchStatus() {
     if (document.hidden || state.watchInFlight || !state.gamePk) return;
+    if (state.feed && state.feed.gameData && state.feed.gameData.status &&
+      state.feed.gameData.status.abstractGameState !== 'Live') return;
     state.watchInFlight = true;
     MLB.gameStatusLean(state.gamePk)
       .then(function (payload) {

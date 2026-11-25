@@ -590,6 +590,7 @@
   }
 
   function numOrNull(v) {
+    if (v === null || v === undefined || v === '') return null;
     var n = Number(v);
     return isFinite(n) ? n : null;
   }

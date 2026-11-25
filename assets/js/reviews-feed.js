@@ -58,6 +58,7 @@
     finalSeen: Object.create(null),
     nextDue: Object.create(null),
     statusByPk: Object.create(null),
+    scheduleLoaded: false,
     scanning: false,
     scanError: null,
     soundOn: false,
@@ -323,6 +324,7 @@
       var entry = {
         id: review.id,
         kind: 'review',
+        officialDate: expectedDate || state.date,
         gamePk: game.gamePk,
         matchupLabel: UI.abbr(teams.away) + ' @ ' + UI.abbr(teams.home),
         teams: teams,
@@ -359,6 +361,7 @@
       var isNewPending = upsertEntry({
         id: row.id,
         kind: 'pending',
+        officialDate: expectedDate || state.date,
         gamePk: game.gamePk,
         matchupLabel: UI.abbr(teams.away) + ' @ ' + UI.abbr(teams.home),
         teams: teams,
@@ -390,6 +393,7 @@
       var isNewChange = upsertEntry({
         id: game.gamePk + ':' + change.atBatIndex + ':scoring-change',
         kind: 'scoring_change',
+        officialDate: expectedDate || state.date,
         gamePk: game.gamePk,
         matchupLabel: UI.abbr(teams.away) + ' @ ' + UI.abbr(teams.home),
         teams: teams,
@@ -462,6 +466,7 @@
       .then(function (payload) {
         if (scanSeq !== state.dateSeq || scanDate !== state.date) return null;
         state.games = flattenGames(payload);
+        state.scheduleLoaded = true;
         var now = Date.now();
         var due = state.games.filter(function (g) { return shouldFetch(g, now); });
         state.scanError = null;
@@ -491,8 +496,29 @@
         if (scanSeq !== state.dateSeq || scanDate !== state.date) return;
         state.scanning = false;
         state.lastScanAt = Date.now();
-        scheduleScan(SCAN_MS);
+        scheduleScan(nextScanDelay());
       });
+  }
+
+  /* Live games keep the 250 ms scan cadence; Preview, Final-grace, and
+   * offseason/idle slates back off to match README etiquette. */
+  function nextScanDelay() {
+    var now = Date.now();
+    var hasLive = state.games.some(function (g) {
+      return g.status && g.status.abstractGameState === 'Live';
+    });
+    if (hasLive) return SCAN_MS;
+    var hasInGraceFinal = state.games.some(function (g) {
+      if (!g.status || g.status.abstractGameState !== 'Final') return false;
+      var first = state.finalSeen[g.gamePk];
+      return !first || (now - first) <= FINAL_GRACE_MS;
+    });
+    if (hasInGraceFinal) return 1000;
+    var hasPreview = state.games.some(function (g) {
+      return g.status && g.status.abstractGameState === 'Preview';
+    });
+    if (hasPreview) return 15000;
+    return 30000;
   }
 
   function scheduleScan(delay) {
@@ -851,7 +877,7 @@
   }
 
   function entriesSignature() {
-    return state.filter + '|' + state.games.length + '|' + (state.lastGameDate || '') + '|' + state.entries.map(function (e) {
+    return state.filter + '|' + (state.scheduleLoaded ? '1' : '0') + '|' + state.games.length + '|' + (state.lastGameDate || '') + '|' + state.entries.map(function (e) {
       return [e.id, e.lastSeen, e.review && e.review.outcome, e.review && e.review.inProgress,
         e.scoreTracker && e.scoreTracker.actual ? e.scoreTracker.actual.away + '-' + e.scoreTracker.actual.home : '',
         e.scoreTracker && e.scoreTracker.before ? e.scoreTracker.before.away + '-' + e.scoreTracker.before.home : ''].join(':');
@@ -893,7 +919,9 @@
     var rows = visibleEntries();
     if (!rows.length) {
       var emptyNote = 'No tracked events for this date and filter yet. New challenges, reviews, boundary calls, ABS challenges, official-scorer pending rulings and official scoring changes appear here live.';
-      if (!state.games.length && !state.entries.length) {
+      if (!state.scheduleLoaded && !state.entries.length) {
+        list.innerHTML = '<div class="feed-empty">Scanning games for ' + UI.esc(MLB.formatDateLabel(state.date)) + '…</div>';
+      } else if (!state.games.length && !state.entries.length) {
         list.innerHTML = '<div class="panel" style="text-align:center;color:var(--muted)">' +
           'No games scheduled for ' + UI.esc(MLB.formatDateLabel(state.date)) + '.' +
           '<div class="feed-empty">' + UI.esc(emptyNote) + '</div>' +
@@ -953,6 +981,7 @@
     clearTimeout(state.timers.scan);
     state.scanning = false;
     state.date = clean;
+    state.scheduleLoaded = false;
     state.games = [];
     state.entries = [];
     state.snapshots = Object.create(null);

@@ -28,9 +28,13 @@
         or the reference site from its network environment, so its historical verification claims were
         inherited from upstream, not independently rechecked, and live data/CORS/parity were unverified
         at the time. The offline fixture tests alone do not establish that the live service works.
-        <strong>Later update:</strong> session <code>c394a038</code> did reach the official endpoints and the
-        reference deployment, confirmed live parity and published the evidence in §15 below; the
-        model estimates and other upstream flags remain unverified.</p>
+        <strong>Later updates:</strong> session <code>c394a038</code> (<strong>§15</strong>) and session
+        <code>df7b58c1</code> (<strong>§16</strong>) reached the official endpoints and the reference
+        deployment, confirmed full live parity on <code>2026-08-26</code> (15 games / 78 tracked entries)
+        and upcoming 2027 dates (<code>2027-02-19</code>, <code>2027-03-25</code>, <code>2027-04-01</code>),
+        and fixed upcoming-game-day <code>startTimeTBD</code> placeholder times, <code>null</code> counter coercion,
+        premature offseason range fetches, and non-live polling backoff; model estimates and other upstream
+        flags remain unverified.</p>
       <p>
         This page lists every claim made about this rebuild together with the
         <strong>official source</strong> it was checked against, and every value or behaviour that
@@ -1005,7 +1009,7 @@ node server.mjs                  # optional persistence backend (feed log + SSE)
           <td>C-1</td>
           <td class="wrap">Source tree copied from the working site.</td>
           <td class="wrap">All tracked files at upstream commit <code>5c02527</code>: pages, nine assets, server, tests, tools, docs and audit.</td>
-          <td class="wrap">Copied verbatim; only this board, README URLs, <code>package.json</code> homepage and the 404 base path were adapted. Upstream board archived in <code>docs/upstream-COORDINATION.md</code>.</td>
+          <td class="wrap">Copied verbatim; only this board, README URLs, <code>package.json</code> homepage and the 404 base path were adapted. Upstream board archived in <code>audit/upstream-coordination.md</code>.</td>
           <td class="wrap"><a href="https://api.github.com/repos/snapquast73-boop/LIVPBP/git/trees/5c02527d3c7a56ea66c698cfabff80a407b6dfd3?recursive=1" target="_blank" rel="noopener">upstream tree @ 5c02527 (GitHub API)</a></td>
           <td class="status-ok">Verified</td>
         </tr>
@@ -1073,6 +1077,104 @@ node server.mjs                  # optional persistence backend (feed log + SSE)
       <code>node tools/restoration-check.mjs</code> (ALL CHECKS PASSED) ·
       <code>node tests/props-provenance-test.mjs</code>. Live Pages verification is recorded in
       <a href="COORDINATION.md">COORDINATION.md</a> after deployment.
+    </p>
+
+    <h2>16. Full 15-game <code>2026-08-26</code> + upcoming <code>2027</code> verification &amp; audited fixes (session <code>df7b58c1</code>, 2026-11-25)</h2>
+    <p style="color:var(--muted);font-size:13px">
+      Session <code>df7b58c1</code> re-checked every file copied from
+      <a href="https://github.com/snapquast73-boop/LIVPBP/commit/5c02527d3c7a56ea66c698cfabff80a407b6dfd3" target="_blank" rel="noopener">LIVPBP @ 5c02527</a>
+      against live <code>statsapi.mlb.com</code> responses for all 15 games on <code>2026-08-26</code>,
+      the offseason end date (<code>2026-10-28</code>), and upcoming 2027 game days
+      (<code>2027-02-19</code> Spring Training, <code>2027-03-25</code> Opening Day), plus the live deployed
+      <a href="https://kanlerxz87-cyber.github.io/Alert1/reviews.html?date=2026-08-26" target="_blank" rel="noopener">Alert1 Replay Feed</a>
+      and <a href="https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26" target="_blank" rel="noopener">reference LIVPBP Replay Feed</a>.
+      Every row carries an official source link; unconfirmed values are left blank and flagged.
+      Full record: <a href="docs/verification-report.md">docs/verification-report.md §9</a>.
+    </p>
+    <table class="verify">
+      <thead>
+        <tr><th>#</th><th>Item / finding</th><th>Confirmed official value</th><th>Resolution / why it is flagged</th><th>Official source</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>A1-1</td>
+          <td class="wrap">Full 15-game <code>2026-08-26</code> Replay Feed parity (all 7 <code>hasChallenges</code> games, 10 non-ABS + 68 ABS = 78 tracked entries)</td>
+          <td class="wrap"><code>totalGames: 15</code>; 7 challenge games (<code>823180</code>, <code>823096</code>, <code>822692</code>, <code>823506</code>, <code>824555</code>, <code>823015</code>, <code>824963</code>); <code>NH</code> boundary (<code>823506:19:5</code>), <code>MA</code> tag (<code>824555:2:7</code>, <code>823180:57</code>), <code>NF</code> umpire (<code>823180:84</code>), <code>MJ</code> ABS</td>
+          <td class="wrap"><strong>Verified live:</strong> deployed <code>Alert1/reviews.html?date=2026-08-26</code> renders identical counts (10 Reviews, 8 Challenges, 2 Umpire reviews, 68 ABS, 1 Boundary call, 0 Under review, 1 Runs at risk, 0 Scoring changes, 78 tracked entries) to reference <code>LIVPBP</code>.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2026-08-26&amp;hydrate=probablePitcher,linescore,decisions,review" target="_blank" rel="noopener">schedule 2026-08-26</a> · <a href="https://statsapi.mlb.com/api/v1/game/823506/playByPlay" target="_blank" rel="noopener">823506 playByPlay</a> · <a href="https://statsapi.mlb.com/api/v1/game/824555/playByPlay" target="_blank" rel="noopener">824555 playByPlay</a> · <a href="https://statsapi.mlb.com/api/v1/game/823180/playByPlay" target="_blank" rel="noopener">823180 playByPlay</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>A1-2</td>
+          <td class="wrap">Offseason empty date (<code>2026-11-25</code>) and upcoming 2027 schedule (<code>2027-02-19</code> Spring Training, <code>2027-03-25</code> Opening Day)</td>
+          <td class="wrap">Last 2026 game <code>2026-10-28</code>; <code>2026-11-25</code> = 0 games; <code>2027-02-19</code> = 17 games; <code>2027-03-25</code> = 14 <code>Preview</code> games (<code>review: {away:{}, home:{}}</code>)</td>
+          <td class="wrap"><strong>Verified live:</strong> scoreboard, Replay Feed and game page handle offseason empty states (offering <code>Wed Oct 28, 2026</code>) and upcoming 2027 Preview slates cleanly.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;startDate=2026-10-20&amp;endDate=2026-11-25&amp;fields=dates,date,totalGames" target="_blank" rel="noopener">2026 postseason range</a> · <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;startDate=2027-02-15&amp;endDate=2027-04-05&amp;fields=dates,date,totalGames" target="_blank" rel="noopener">2027 schedule range</a> · <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2027-03-25&amp;hydrate=probablePitcher,linescore,decisions,review" target="_blank" rel="noopener">2027-03-25 Opening Day</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>A1-3</td>
+          <td class="wrap">Upcoming 2027 games with <code>status.startTimeTBD: true</code> carry dummy <code>:33Z</code> placeholder timestamps</td>
+          <td class="wrap">Games <code>854131</code> (CLE @ CHC, <code>08:33:00Z</code>), <code>852663</code> (COL @ SF, <code>10:33:00Z</code>), <code>853388</code> (ATL @ LAD, <code>10:33:00Z</code>) on <code>2027-03-25</code>: all <code>startTimeTBD: true</code></td>
+          <td class="wrap"><strong>Bug found &amp; fixed:</strong> upstream <code>scoreboard.js</code> and <code>game.js</code> rendered MLB's dummy timestamps as bogus <code>4:33 AM</code> / <code>6:33 AM</code> start times. Both pages now render <code>TBD</code> whenever <code>status.startTimeTBD === true</code> (regression-tested in <code>tools/smoke-test.mjs</code> §[14]).</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2027-03-25&amp;fields=dates,games,gamePk,gameDate,status,startTimeTBD,detailedState,teams,away,home,team,name" target="_blank" rel="noopener">2027-03-25 startTimeTBD payload</a></td>
+          <td class="status-ok">Fixed &amp; tested</td>
+        </tr>
+        <tr>
+          <td>A1-4</td>
+          <td class="wrap"><code>Reviews.numOrNull(v)</code> coerced <code>null</code> / <code>""</code> to <code>0</code> via <code>Number(null) === 0</code></td>
+          <td class="wrap">Absent counters arrive empty (<code>{away:{}, home:{}}</code>) and must never be zero-filled</td>
+          <td class="wrap"><strong>Bug found &amp; fixed:</strong> <code>assets/js/reviews.js</code> now explicitly returns <code>null</code> for <code>null</code>, <code>undefined</code>, or empty strings (regression-tested in <code>tools/smoke-test.mjs</code> §[14]).</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2027-03-25&amp;hydrate=review" target="_blank" rel="noopener">2027-03-25 empty review counters</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/reviews.js" target="_blank" rel="noopener">assets/js/reviews.js</a></td>
+          <td class="status-ok">Fixed &amp; tested</td>
+        </tr>
+        <tr>
+          <td>A1-5</td>
+          <td class="wrap">Premature empty-date flash and spurious 180-day <code>scheduleRange</code> fetch before initial schedule load resolved</td>
+          <td class="wrap"><code>totalGames: 15</code> on <code>2026-08-26</code></td>
+          <td class="wrap"><strong>Bug found &amp; fixed:</strong> <code>scoreboard.js</code> and <code>reviews-feed.js</code> triggered <code>offerRecentDate()</code> before the first schedule response arrived, causing a premature mid-scan partial render (30 vs 78 entries) on <code>2026-08-26</code>. Added <code>scheduleLoaded</code> guard so <code>offerRecentDate()</code> runs only after a confirmed 0-game schedule response.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2026-08-26" target="_blank" rel="noopener">schedule 2026-08-26</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/reviews-feed.js" target="_blank" rel="noopener">assets/js/reviews-feed.js</a></td>
+          <td class="status-ok">Fixed &amp; tested</td>
+        </tr>
+        <tr>
+          <td>A1-6</td>
+          <td class="wrap">Unconditional 250 ms scan loop (<code>reviews-feed.js</code>), unconditional 125 ms <code>watchStatus</code> (<code>game.js</code>), and missing <code>officialDate</code> on ingested entries</td>
+          <td class="wrap">Official <code>abstractGameState</code> values: <code>Live</code>, <code>Preview</code>, <code>Final</code></td>
+          <td class="wrap"><strong>Fixed:</strong> <code>reviews-feed.js</code> now keeps 250 ms on Live slates and backs off non-live slates (1 s Final-grace / 15 s Preview / 30 s idle) while stamping <code>officialDate</code> on every ingested entry; <code>game.js</code> runs 125 ms <code>watchStatus()</code> only while a game is <code>Live</code> (regression-tested in <code>tools/smoke-test.mjs</code> §[14]).</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/gameStatus" target="_blank" rel="noopener">api/v1/gameStatus</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/reviews-feed.js" target="_blank" rel="noopener">reviews-feed.js</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/game.js" target="_blank" rel="noopener">game.js</a></td>
+          <td class="status-ok">Fixed &amp; tested</td>
+        </tr>
+        <tr>
+          <td>A1-7</td>
+          <td class="wrap">Umpire/boundary rows on <code>reviews.html</code> (<code>823506:19:5:NH</code>, <code>823180:84:p:NF</code>) print the both-teams summary visibly via fallback, while <code>README.md</code> / <code>R2-4</code> say umpire rows omit a visible counter line</td>
+          <td class="wrap">Game <code>823180</code>: manager CIN <code>0/1</code>, SF <code>1/0</code>; ABS CIN <code>4/0/2</code>, SF <code>2/1/1</code></td>
+          <td class="wrap"><strong>Flagged (reference parity preserved):</strong> matches live <code>snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26</code>; owner's call whether to hide the fallback line on umpire rows in a future iteration.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1.1/game/823180/feed/live?fields=gameData,review,absChallenges,hasChallenges,away,home,used,remaining,usedSuccessful,usedFailed" target="_blank" rel="noopener">823180 official counters</a> · <a href="https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26" target="_blank" rel="noopener">reference LIVPBP page</a></td>
+          <td class="status-flag">Flagged — owner's call</td>
+        </tr>
+        <tr>
+          <td>A1-8</td>
+          <td class="wrap">Prior audit row <code>AF-4</code> mentions a “45-day <code>scheduleRange</code>”, while <code>scoreboard.js</code> and <code>reviews-feed.js</code> query <code>-180</code> days</td>
+          <td class="wrap">Last 2026 game <code>2026-10-28</code> (28 days prior to <code>2026-11-25</code>)</td>
+          <td class="wrap"><strong>Flagged:</strong> 180-day window kept so offseason jumps reach back to October throughout winter; discrepancy documented rather than rewriting historical row <code>AF-4</code>.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;startDate=2026-10-20&amp;endDate=2026-11-25&amp;fields=dates,date,totalGames" target="_blank" rel="noopener">2026 postseason end</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/scoreboard.js" target="_blank" rel="noopener">assets/js/scoreboard.js</a></td>
+          <td class="status-flag">Flagged</td>
+        </tr>
+        <tr>
+          <td>A1-9</td>
+          <td class="wrap">Arena fixed branch <code>arena/df7b58c1-alert1</code> used instead of <code>session-&lt;id&gt;/&lt;task&gt;</code>; <code>v1.0.0-stable-checkpoint</code> tag absent on <code>Alert1</code>; unconfirmed external constants (club hex colours, forecast weights, rate limit)</td>
+          <td class="wrap"></td>
+          <td class="wrap">Fixed branch logged in <code>COORDINATION.md</code>; no tag fabricated on <code>Alert1</code>; unconfirmed external constants remain blank and flagged (carried from <code>U-1</code>/<code>U-2</code>/<code>U-9</code>/<code>U-10</code>/<code>C-6</code>).</td>
+          <td class="wrap"><a href="https://api.github.com/repos/kanlerxz87-cyber/Alert1/tags" target="_blank" rel="noopener">Alert1 tags (GitHub API)</a> · <a href="https://statsapi.mlb.com/api/v1/teams?sportId=1" target="_blank" rel="noopener">official teams payload</a> · <a href="COORDINATION.md">COORDINATION.md</a></td>
+          <td class="status-unverified">Unverified — flagged</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="color:var(--muted);font-size:13px">
+      Checks run by <code>df7b58c1</code>: <code>npm test</code> (69 passed, 0 failed) ·
+      <code>node tests/run-all.mjs</code> (syntax, 46 local refs, 8 bindings, 47/47 jsdom) ·
+      <code>node tests/props-provenance-test.mjs</code> (5 passed) ·
+      <code>node tools/restoration-check.mjs</code> (ALL CHECKS PASSED).
     </p>
 
   </main>
