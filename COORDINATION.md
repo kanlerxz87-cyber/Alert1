@@ -24,7 +24,7 @@ the final PR stay on this branch. No other session's claimed file scope is edite
 |---|---|---|---|---|---|
 | V-1 | Independent line-by-line re-verification of copied source against upstream commit and reference replay page; official-MLB source links for every checked row; publish any new irregularities | `in progress` | `5e124cc4` | `audit/5e124cc4-verification.md`, `flagged.html` | Upstream: https://api.github.com/repos/snapquast73-boop/LIVPBP/commits/5c02527d3c7a56ea66c698cfabff80a407b6dfd3 ; reference: https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26 |
 | V-2 | Verify upcoming-game-day behavior on the live static site (no manual input), fix any defects found and add regression coverage | `in progress` | `5e124cc4` | `assets/js/*.js`, `tests/*`, `tools/*` only if defects are found | Official schedule: https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-11-25&endDate=2027-05-24&fields=dates,date,totalGames |
-| V-3 | Final integration: run every check, PR `arena/5e124cc4-alert1` -> `main`, merge autonomously, verify Pages deployment + live pages, record PR/merge/deploy evidence | `in progress` | `5e124cc4` | `COORDINATION.md`, `.github/workflows/*`, `README.md`, `docs/verification-report.md` | Integration record to be added here when complete |
+| V-3 | Final integration: run every check, PR `arena/5e124cc4-alert1` -> `main`, merge autonomously, verify Pages deployment + live pages, record PR/merge/deploy evidence | `in progress` | `5e124cc4` | `COORDINATION.md`, `.github/workflows/*`, `README.md`, `docs/verification-report.md` | Checks: https://github.com/kanlerxz87-cyber/Alert1/actions ; live Pages: https://kanlerxz87-cyber.github.io/Alert1/ |
 
 ## Active task board — session `fae80285` (2026-11-25)
 
