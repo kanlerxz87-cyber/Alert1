@@ -75,7 +75,7 @@ Fetched both deployments live on 2026-11-25 (reference first, then Alert1):
 
 | # | Irregularity | Official evidence | Disposition | Official source |
 |---|---|---|---|---|
-| H-2 | `v1.0.0-stable-checkpoint` tag exists only on upstream (`ffceec3`); `git ls-remote --tags origin` in Alert1 is empty, so README's `git reset --hard v1.0.0-stable-checkpoint` fails in this repo. `flagged.html` §3 row claims "Resolved" via the upstream tag link. | Upstream tag ref `refs/tags/v1.0.0-stable-checkpoint` → `ffceec3e9f24c870b160d40c40ec6d8144c0e47a`; Alert1 has no tags | Record corrected in README copy notice + `flagged.html` §18; tag NOT created/pushed (branch-only push rule) — flagged for user decision | https://github.com/snapquast73-boop/LIVPBP/tree/v1.0.0-stable-checkpoint |
+| H-2 | `v1.0.0-stable-checkpoint` tag exists only on upstream (`ffceec3`); `git ls-remote --tags origin` in Alert1 is empty, so README's `git reset --hard v1.0.0-stable-checkpoint` fails in this repo. `flagged.html` §3 row claims "Resolved" via the upstream tag link. | Upstream tag ref `refs/tags/v1.0.0-stable-checkpoint` → `ffceec3e9f24c870b160d40c40ec6d8144c0e47a`; Alert1 has no tags | Record corrected in README copy notice + `flagged.html` §19; tag NOT created/pushed (branch-only push rule) — flagged for user decision | https://github.com/snapquast73-boop/LIVPBP/tree/v1.0.0-stable-checkpoint |
 | H-4 | Arena branch convention deviation (`arena/0eea8c12-alert1` instead of `session-<id>/<task>`) — inherited, unchanged | Branch note in `COORDINATION.md` | No action; published on `flagged.html` §18 | https://github.com/kanlerxz87-cyber/Alert1/blob/main/COORDINATION.md |
 
 No other irregularities were found. No JS defects were found, so no site code
