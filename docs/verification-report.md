@@ -256,3 +256,29 @@ node tests/run-all.mjs           -> syntax OK · 48 local refs OK · 8 bindings 
 node tests/props-provenance-test.mjs -> 5 passed, 0 failed
 node tools/restoration-check.mjs -> ALL CHECKS PASSED
 ```
+
+---
+
+## 10. Independent copy-parity & upcoming-game-day verification — session `0eea8c12` (2026-11-25)
+
+Session `0eea8c12` independently re-verified the copy of `snapquast73-boop/LIVPBP` (`5c02527`, still upstream HEAD) by git blob hashes, live reference parity, and fresh official MLB StatsAPI schedule fetches. No site code was changed in this pass: no JS defects were found. Full record: [`audit/alert1-verification-0eea8c12.md`](audit/alert1-verification-0eea8c12.md).
+
+| # | Item / finding | Confirmed official value | Resolution / why it is flagged | Official source | Status |
+|---|---|---|---|---|---|
+| H-1 | Copy parity by git blob hashes: 19 files byte-identical to upstream `5c02527`; 5 JS files differ only by previously verified fixes; no file missing or deleted | Upstream HEAD still `5c02527d3c7a56ea66c698cfabff80a407b6dfd3`; live `reviews.html?date=2026-08-26` matches the reference row-for-row (10 Reviews · 8 Challenges · 2 Umpire · 68 ABS · 1 Boundary · 1 Runs at risk · 15 games · 78 tracked entries) | **Verified — no action:** the copy runs like the reference with no manual input. Upcoming slates confirmed: `2027-02-19` 17 games, `2027-03-25` 14 games, offseason `2026-11-25` offers both `2026-10-28` and `2027-02-19` jump buttons. | <https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3> · <https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-08-26&fields=dates,date,totalGames,games,gamePk,officialDate,status,teams,team,name> · <https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2027-03-25&fields=dates,date,totalGames,games,gamePk,gameDate,status,startTimeTBD,detailedState,teams,away,home,team,name> | Verified |
+| H-2 | `v1.0.0-stable-checkpoint` tag exists only on upstream (`ffceec3`); this repo has no tags, so README's `git reset --hard v1.0.0-stable-checkpoint` fails here | Upstream ref `refs/tags/v1.0.0-stable-checkpoint` → `ffceec3e9f24c870b160d40c40ec6d8144c0e47a`; Alert1 `git tag -l` and remote tags both empty | **Flagged for your decision:** README copy notice now states the tag is absent here and points to `flagged.html` §18. Tag not created/pushed (branch-only push rule). | <https://github.com/snapquast73-boop/LIVPBP/tree/v1.0.0-stable-checkpoint> · <https://github.com/kanlerxz87-cyber/Alert1/blob/main/README.md> | Flagged — needs your decision |
+| H-3 | Reference renders bogus `4:33 AM`/`6:33 AM` for `startTimeTBD` games on `2027-03-25`; this copy renders `TBD` | Official payload: `854131` `2027-03-25T08:33:00Z`, `852663`/`853388` `2027-03-25T10:33:00Z`, all `startTimeTBD: true` | **Intentional improvement over the reference (live-verified):** recorded so the difference is not mistaken for a copy error. | <https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2027-03-25&fields=dates,games,gamePk,gameDate,status,startTimeTBD> · <https://kanlerxz87-cyber.github.io/Alert1/?date=2027-03-25> | Verified improvement |
+| H-4 | Arena branch convention deviation (`arena/0eea8c12-alert1` instead of `session-<id>/<task>`) — inherited | Session fixed to one branch; integration is a PR into `main` | **Flagged (no action):** published in `COORDINATION.md` branch note and `flagged.html` §18. Claim committed/pushed first (`89e4706`). | <https://github.com/kanlerxz87-cyber/Alert1/blob/main/COORDINATION.md> | Flagged — inherited |
+
+### Checks run by `0eea8c12`
+
+```text
+npm test                                     -> 69 passed, 0 failed
+node tests/run-all.mjs                       -> syntax OK · 50 local refs OK · 8 bindings OK · 47/47 jsdom
+node tests/props-provenance-test.mjs         -> 5 passed, 0 failed
+node tests/alert1-feedlog-and-provenance-test.mjs -> 4 passed, 0 failed
+node tools/restoration-check.mjs             -> ALL CHECKS PASSED
+live: reviews.html?date=2026-08-26           -> identical to reference (10/8/2/68/1/0/1, 15 games, 78 entries)
+live: ?date=2027-03-25 / ?date=2027-02-19    -> 14 / 17 games, TBD on startTimeTBD games only
+live: ?date=2026-11-25 (offseason)           -> empty slate + 2026-10-28 / 2027-02-19 jump buttons
+```
