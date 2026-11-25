@@ -22,17 +22,19 @@
   <main class="flagged-main">
     <div class="flagged-intro">
       <h1 style="margin-top:0">Flagged for Review</h1>
-      <p><strong>Copy verification, 2026-11-25 (PR #1 offline note — superseded by live checks in §§15–16):</strong> This site was copied from
+      <p><strong>Copy verification note from session <code>arena-db1b5438</code> (preserved):</strong> This site was copied from
         <a href="https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3">the upstream repository at commit 5c02527</a>.
-        The initial integration session (PR #1, <code>arena-db1b5438</code>) could not reach the
-        <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2026-08-26">official MLB StatsAPI</a>
-        or the reference site from its network environment, so it conservatively disclosed those live checks as unverified.
-        Subsequent sessions (<code>c394a038</code> in <strong>§15</strong> and <code>df7b58c1</code> in <strong>§16</strong>)
-        completed direct live verification against official <code>statsapi.mlb.com</code> endpoints for
-        <code>2026-08-26</code> (all 15 games / 78 tracked Replay Feed entries), postseason end <code>2026-10-28</code>,
-        upcoming 2027 dates (<code>2027-02-19</code> &amp; <code>2027-03-25</code>), and the live deployed Pages site.
-        Values that no official source publishes (team hex colours, hit-model constants, rate limits, cross-browser server log on static Pages)
-        remain blank and flagged below.</p>
+        That session could not access the <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2026-08-26">official MLB StatsAPI</a>
+        or the reference site from its network environment, so its historical verification claims were
+        inherited from upstream, not independently rechecked, and live data/CORS/parity were unverified
+        at the time. The offline fixture tests alone do not establish that the live service works.
+        <strong>Later updates:</strong> session <code>c394a038</code> (<strong>§15</strong>) and session
+        <code>df7b58c1</code> (<strong>§16</strong>) reached the official endpoints and the reference
+        deployment, confirmed full live parity on <code>2026-08-26</code> (15 games / 78 tracked entries)
+        and upcoming 2027 dates (<code>2027-02-19</code>, <code>2027-03-25</code>, <code>2027-04-01</code>),
+        and fixed upcoming-game-day <code>startTimeTBD</code> placeholder times, <code>null</code> counter coercion,
+        premature offseason range fetches, and non-live polling backoff; model estimates and other upstream
+        flags remain unverified.</p>
       <p>
         This page lists every claim made about this rebuild together with the
         <strong>official source</strong> it was checked against, and every value or behaviour that

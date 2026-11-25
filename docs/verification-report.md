@@ -219,6 +219,17 @@ source does not publish is left blank, not inferred.
 | C-18 | `flagged.html` §§1–14 and `docs/verification-report.md` §§1–7 are upstream historical records referring to the upstream deployment and its source repository; they are not new claims about this deployment. | Upstream published page and source tree at the copied commit. | Preserved verbatim for provenance; this section adds the copy-specific verification. No old claim was silently re-labelled as verified here. | <https://snapquast73-boop.github.io/LIVPBP/flagged.html> · <https://api.github.com/repos/snapquast73-boop/LIVPBP/git/trees/5c02527d3c7a56ea66c698cfabff80a407b6dfd3?recursive=1> | Flagged |
 | C-19 | Values the official API does not publish (club hex colours, forecast model constants, exact wording of a lost original, cross-browser log sharing) remain blank in the source tables. | Official teams payload has no club colours; StatsAPI publishes no forecast constants. | Left blank and carried forward as U-1/U-2/U-9/U-11 — no inferred values added. | <https://statsapi.mlb.com/api/v1/teams?sportId=1&fields=teams,id,name,abbreviation&season=2026> · <https://statsapi.mlb.com/api/v1/game/823180/playByPlay> | Unverified (flag retained) |
 
+### 8.4 Live deployment verification (after PR #2 merge, 2026-11-25)
+
+| # | Check | Value observed on the published site | Source | Result |
+|---|---|---|---|---|
+| C-20 | GitHub Pages deploy | Build `630dae226c1f9e956ef1775daeea6bb1c48e314d` status `built`; `pages-delivery` check run 4 and `Site checks` run 6 both `success` | <https://api.github.com/repos/kanlerxz87-cyber/Alert1/pages/builds/630dae226c1f9e956ef1775daeea6bb1c48e314d> · <https://github.com/kanlerxz87-cyber/Alert1/actions/runs/45698402504> | Verified |
+| C-21 | Reference-date replay feed parity | Both the reference (cache-busted) and this deployment render `15 game(s)`, `10 Reviews`, `8 Challenges`, `2 Umpire reviews`, `68 ABS challenges`, `1 Boundary call`, `1 Runs at risk`, `78 tracked entries`; the MF/MA/NF rows and scores match. | <https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26&cachebust=c394a038> · <https://kanlerxz87-cyber.github.io/Alert1/reviews.html?date=2026-08-26&verify=final> | Verified |
+| C-22 | Scoreboard and game page | Scoreboard renders all 15 games for 2026-08-26 (CIN 10 – SF 9); game 823180 renders header, linescore with per-row official source links, and play-by-play with review chips. | <https://kanlerxz87-cyber.github.io/Alert1/?date=2026-08-26&verify=final> · <https://kanlerxz87-cyber.github.io/Alert1/game.html?gamePk=823180&verify=final> · <https://statsapi.mlb.com/api/v1/game/823180/linescore> | Verified |
+| C-23 | Upcoming game day | `2027-04-01` shows 8 scheduled games on both the scoreboard and replay feed; the official schedule reports `totalGames: 8` with the same gamePks. No manual input was used. | <https://kanlerxz87-cyber.github.io/Alert1/?date=2027-04-01&verify=final> · <https://kanlerxz87-cyber.github.io/Alert1/reviews.html?date=2027-04-01&verify=final> · <https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2027-04-01&fields=dates,date,totalGames,games,gamePk,officialDate,status,teams,team,name> | Verified |
+| C-24 | Flagged page live | §15 is published with all eight rows carrying source links; the earlier session's unverified notice is preserved and explicitly marked as superseded for live data/parity. | <https://kanlerxz87-cyber.github.io/Alert1/flagged.html?verify=final> | Verified |
+| C-25 | Verification-caveat: page-fetch caching | The first fetch of the reference URL returned a stale 3-row snapshot stamped `3:38:33 PM`; a cache-busted fetch returned the full 10-row/78-entry feed matching this site. This is a fetch-tool cache, not a site discrepancy; it is recorded so the earlier snapshot is not mistaken for a parity failure. | <https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26> · <https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26&cachebust=c394a038> | Flagged (tool cache) |
+
 ---
 
 ## 9. Full 15-game `2026-08-26` + upcoming `2027` verification & audited fixes — session `df7b58c1` (2026-11-25)
@@ -241,8 +252,7 @@ Session `df7b58c1` completed a full line-by-line audit of every file copied from
 
 ```text
 npm test                         -> 69 passed, 0 failed  (+5 regressions in §[14])
-node tests/run-all.mjs           -> syntax OK · 46 local refs OK · 8 bindings OK · 47/47 jsdom
+node tests/run-all.mjs           -> syntax OK · 48 local refs OK · 8 bindings OK · 47/47 jsdom
 node tests/props-provenance-test.mjs -> 5 passed, 0 failed
 node tools/restoration-check.mjs -> ALL CHECKS PASSED
 ```
-
