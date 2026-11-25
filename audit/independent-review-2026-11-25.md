@@ -4,6 +4,8 @@ Session: `f0bea661` · Branch: `arena/f0bea661-alert1` · reviewed revision: `e2
 
 ## Scope and source provenance
 
+A parallel session has since published a broader, live reference/MLB re-verification in [`audit/alert1-reverify-2026-11-25-e9936287.md`](alert1-reverify-2026-11-25-e9936287.md). This report is complementary: it focuses on the test's source-link verification limits and a narrow selected-file comparison, rather than repeating that live audit.
+
 I downloaded the upstream source archive for the exact recorded revision, [`snapquast73-boop/LIVPBP` commit `5c02527d3c7a56ea66c698cfabff80a407b6dfd3`](https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3), from GitHub's codeload host and compared these 11 files byte-for-byte:
 
 - Identical to that revision: `index.html`, `reviews.html`, `game.html`, `server.mjs`, `assets/js/api.js`, and `assets/js/ui.js`.
