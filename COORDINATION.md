@@ -14,6 +14,12 @@ work stays on its assigned branch only (`arena/db1b5438-alert1`, `arena/c394a038
 `arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`); integration is a pull request from that branch
 into `main`. The deviation is published on [`flagged.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) (C-7 / A1-9 / F-5).
 
+## Active task board — session `f0bea661` (2026-11-25)
+
+| ID | Task | Status | Owner | File scope | Notes / Official Source |
+|---|---|---|---|---|---|
+| G-1 | Independent local review of copied-site provenance, source-link coverage checks, and test/build readiness; document results and any limits without changing shared site/data files | `in progress` | `f0bea661` | `audit/independent-review-2026-11-25.md`, `COORDINATION.md` | Scope is limited to new audit documentation and this board; prior site/source-verification tasks are complete. Upstream source: https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3 |
+
 ## Active task board — session `fae80285` (2026-11-25)
 
 | ID | Task | Status | Owner | File scope | Notes / Official Source |
