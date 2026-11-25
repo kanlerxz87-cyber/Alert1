@@ -170,6 +170,8 @@ await check('Every table row in flagged.html and active Alert1 documentation/aud
     'audit/reference-parity-2026-11-22.md',
     'audit/alert1-live-verification-2026-11-25.md',
     'audit/alert1-reverify-2026-11-25-e9936287.md',
+    'audit/alert1-verification-0eea8c12.md',
+    'audit/36284656-pages-delivery-verification.md',
     'audit/alert1-session-15b89941-verification.md',
   ];
   for (const rel of mdFiles) {
