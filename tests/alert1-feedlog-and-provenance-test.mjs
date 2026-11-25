@@ -169,6 +169,7 @@ await check('Every table row in flagged.html and active Alert1 documentation/aud
     'audit/reference-replay-comparison.md',
     'audit/reference-parity-2026-11-22.md',
     'audit/alert1-live-verification-2026-11-25.md',
+    'audit/5e124cc4-verification.md',
   ];
   for (const rel of mdFiles) {
     const txt = fs.readFileSync(path.join(ROOT, rel), 'utf8');
