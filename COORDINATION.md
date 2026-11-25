@@ -4,17 +4,26 @@ Repo: `kanlerxz87-cyber/Alert1` · Site: https://kanlerxz87-cyber.github.io/Aler
 Reference: https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26
 Copied source: https://github.com/snapquast73-boop/LIVPBP @ `5c02527d3c7a56ea66c698cfabff80a407b6dfd3`
 
-Updated 2026-11-25 by session **`fae80285`** (branch `arena/fae80285-alert1`, fast-forwarded to `origin/main` @ `d99fada`) preserving all prior parallel sessions (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`).
+Updated 2026-11-25 by session **`da098af9`** (branch `arena/da098af9-alert1`, branched from `origin/main` @ `e22ec1d`) preserving all prior parallel sessions (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`, `fae80285`).
 
 ## Branch note (Arena sandbox restriction)
 
 Arena fixes each session to one branch and forbids creating/pushing other branches, so the
 brief's `session-<id>/<task>` branch convention cannot be followed literally. Each session's
 work stays on its assigned branch only (`arena/db1b5438-alert1`, `arena/c394a038-alert1`,
-`arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`); integration is a pull request from that branch
+`arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`, `arena/da098af9-alert1`); integration is a pull request from that branch
 into `main`. The deviation is published on [`flagged.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) (C-7 / A1-9 / F-5).
 
-## Active task board — session `fae80285` (2026-11-25)
+## Active task board — session `da098af9` (2026-11-25)
+
+| ID | Task | Status | Owner | File scope | Notes / Official Source |
+|---|---|---|---|---|---|
+| DA-1 | Line-by-line review of all repository code, HTML, workflows, and upstream copy (`snapquast73-boop/LIVPBP` @ `5c02527`) + official MLB StatsAPI verification of `2026-08-26` and upcoming `2027` game days (`2027-02-19`, `2027-03-25`, `2027-04-01`, offseason `2026-11-25`) | `in progress` | `da098af9` | `audit/da098af9-verification-2026-11-25.md`, `COORDINATION.md` | Upstream commit: https://github.com/snapquast73-boop/LIVPBP/commit/5c02527d3c7a56ea66c698cfabff80a407b6dfd3 ; reference feed: https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26 ; official API: https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-08-26 |
+| DA-2 | Inspect and fix any confirmed upcoming-game-day or parity defects (only if needed after line-by-line review) + add scoped regression test | `unclaimed` | `da098af9` | `tests/da098af9-upcoming-and-parity-test.mjs` (plus targeted JS/HTML only if defect confirmed; coordinate on `COORDINATION.md` if overlapping) | Official upcoming schedule: https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2027-03-25 |
+| DA-3 | Verify 100% official `https://` source-link coverage across every HTML/Markdown table row; leave any unconfirmed value blank and publish flagged items on `flagged.html` | `unclaimed` | `da098af9` | `audit/da098af9-verification-2026-11-25.md`, `flagged.html` (integrate cleanly with `origin/main`) | Flagged page: https://kanlerxz87-cyber.github.io/Alert1/flagged.html |
+| DA-4 | Final integration: merge `origin/main` cleanly preserving all parallel sessions' work, run full test/link/provenance suites, open PR `arena/da098af9-alert1` → `main`, merge autonomously, verify live GitHub Pages deployment, and record PR + merge result | `unclaimed` | `da098af9` | `COORDINATION.md` | Live deployment: https://kanlerxz87-cyber.github.io/Alert1/reviews.html?date=2026-08-26 |
+
+## Preserved board — session `fae80285` (2026-11-25)
 
 | ID | Task | Status | Owner | File scope | Notes / Official Source |
 |---|---|---|---|---|---|
