@@ -4,21 +4,27 @@ Repo: `kanlerxz87-cyber/Alert1` · Site: https://kanlerxz87-cyber.github.io/Aler
 Reference: https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26
 Copied source: https://github.com/snapquast73-boop/LIVPBP @ `5c02527d3c7a56ea66c698cfabff80a407b6dfd3`
 
-Updated 2026-11-25 by session **`fae80285`** (branch `arena/fae80285-alert1`, fast-forwarded to `origin/main` @ `d99fada`) preserving all prior parallel sessions (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`).
+Updated 2026-11-25 by session **`f0bea661`** (branch `arena/f0bea661-alert1`, based on `e22ec1d7`) preserving all prior parallel-session records (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`, `fae80285`).
 
 ## Branch note (Arena sandbox restriction)
 
 Arena fixes each session to one branch and forbids creating/pushing other branches, so the
 brief's `session-<id>/<task>` branch convention cannot be followed literally. Each session's
 work stays on its assigned branch only (`arena/db1b5438-alert1`, `arena/c394a038-alert1`,
-`arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`); integration is a pull request from that branch
+`arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`, `arena/f0bea661-alert1`); integration is a pull request from that branch
 into `main`. The deviation is published on [`flagged.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) (C-7 / A1-9 / F-5).
 
 ## Active task board — session `f0bea661` (2026-11-25)
 
 | ID | Task | Status | Owner | File scope | Notes / Official Source |
 |---|---|---|---|---|---|
-| G-1 | Independent local review of copied-site provenance, source-link coverage checks, and test/build readiness; document results and any limits | `in progress` | `f0bea661` | `audit/independent-review-2026-11-25.md`, `flagged.html`, `COORDINATION.md` | Scope is limited to audit documentation, one verification-limit flag, and this board; prior site/source-verification tasks are complete. Upstream source: https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3 |
+| G-1 | Independent local review of copied-site provenance, source-link coverage checks, and test/build readiness; document results and any limits | `done` | `f0bea661` | `audit/independent-review-2026-11-25.md`, `flagged.html`, `COORDINATION.md` | Compared 11 core files to the exact upstream archive (6 identical, 5 documented modifications); all local suites passed; 128 flagged tbody rows and 213 Markdown table lines had HTTPS links, but the checker does not validate authority/relevance or all rendered tables. Published this verification limit as F-6. No live MLB fetch in this pass. Sources: https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3 · https://github.com/kanlerxz87-cyber/Alert1/blob/main/tests/alert1-feedlog-and-provenance-test.mjs |
+
+### Session log — `f0bea661` (2026-11-25)
+
+- Read the existing coordination board before work; claimed G-1 with scope limited to the independent audit, one review flag, and this board. The claim and scope update were committed and pushed on the assigned branch `arena/f0bea661-alert1` (commits `39cdbc6`, `e42f488`).
+- Retrieved the exact upstream archive at [`5c02527d3c7a56ea66c698cfabff80a407b6dfd3`](https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3) and byte-compared 11 specified runtime/site files; 6 were identical and 5 contained documented follow-up changes. Findings: [`audit/independent-review-2026-11-25.md`](audit/independent-review-2026-11-25.md).
+- `npm ci` (0 vulnerabilities), `npm test` (69/69), `node tests/run-all.mjs` (50 local refs, 8 bindings, 47 DOM checks), `node tests/props-provenance-test.mjs` (5/5), `node tests/alert1-feedlog-and-provenance-test.mjs` (4/4), and `node tools/restoration-check.mjs` all passed. Current checks establish local behavior and HTTPS-link presence, not row-by-row official source validation. Added F-6 to [`flagged.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) to disclose that scope limit. No MLB StatsAPI request was made in this pass because `statsapi.mlb.com` is outside the sandbox's allowed network hosts.
 
 ## Active task board — session `fae80285` (2026-11-25)
 
