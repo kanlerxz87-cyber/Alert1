@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flagged for Review — independent verification (session 5e124cc4)</title>
+  <meta name="description" content="Independently verified MLB live play-by-play copy: official-source table rows, upcoming game-day checks, and flagged irregularities.">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="page-flagged">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-ball">⚾</span>
+      <span>MLB Live PBP</span>
+      <span class="brand-sub">independent verification · flagged for review</span>
+    </div>
+    <a class="btn btn-ghost" href="index.html">← Scoreboard</a>
+    <a class="btn btn-feed" href="reviews.html">🚨 Replay Feed</a>
+    <a class="btn btn-ghost" href="flagged.html">📋 All flags</a>
+  </header>
+
+  <main class="flagged-main">
+    <div class="flagged-intro">
+      <h1 style="margin-top:0">Flagged for Review — independent copy verification</h1>
+      <p>
+        Session <code>5e124cc4</code> independently re-compared the copy with
+        <a href="https://api.github.com/repos/snapquast73-boop/LIVPBP/git/trees/5c02527d3c7a56ea66c698cfabff80a407b6dfd3?recursive=1">upstream commit 5c02527</a>,
+        re-read all 10 non-ABS review objects for <code>2026-08-26</code> from official MLB
+        play-by-play, and verified upcoming slates on the live site. This page is a standalone
+        publication so it can be reviewed without changing shared site sections maintained by
+        other sessions. Full line-by-line record:
+        <a href="audit/5e124cc4-verification.md">audit/5e124cc4-verification.md</a>.
+      </p>
+      <p>
+        Every table row below carries an official <code>https://</code> source link. Values not
+        published by an official source are blank or explicitly marked unobserved; nothing is
+        inferred. These flags do not block the published site.
+      </p>
+    </div>
+
+    <h2>1. Independent copy verification (session <code>5e124cc4</code>, 2026-11-25)</h2>
+    <p style="color:var(--muted);font-size:13px">
+      This pass re-compared the copied tree with
+      <a href="https://api.github.com/repos/snapquast73-boop/LIVPBP/git/trees/5c02527d3c7a56ea66c698cfabff80a407b6dfd3?recursive=1">upstream commit 5c02527</a>,
+      re-read all 10 non-ABS review objects for
+      <a href="https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26">2026-08-26</a>
+      from official play-by-play, and checked upcoming slates (<code>2027-02-19</code>,
+      <code>2027-03-25</code>) on the <a href="https://kanlerxz87-cyber.github.io/Alert1/">live site</a>.
+      Full line-by-line record:
+      <a href="audit/5e124cc4-verification.md">audit/5e124cc4-verification.md</a>.
+      No new functional defect was found; no invented value was added.
+    </p>
+    <table class="flagged-table">
+      <thead>
+        <tr>
+          <th style="width:62px">#</th>
+          <th>Item / Irregularity</th>
+          <th>Verified value or finding</th>
+          <th>Disposition</th>
+          <th>Official Source Link</th>
+          <th style="width:128px">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>V-1</td>
+          <td class="wrap">Upstream MLB <code>reviewDetails</code> prose/schema anomalies F-1..F-3 re-observed on <code>2026-08-26</code></td>
+          <td class="wrap"><code>823506:56:0:MA</code> = <code>"Pickoff Attempt 1B"</code>; <code>823506:19:5:NH</code> = <code>"Foul"</code>; <code>823180:84:p:NF</code> = single <code>NF</code> object with two reviewed calls in the official text.</td>
+          <td class="wrap">Official descriptions preserved verbatim; no narrative invented. Kept flagged as upstream source-data irregularities.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/game/823506/playByPlay" target="_blank" rel="noopener">game/823506/playByPlay</a> · <a href="https://statsapi.mlb.com/api/v1/game/823180/playByPlay" target="_blank" rel="noopener">game/823180/playByPlay</a></td>
+          <td class="status-flag">Flagged — upstream schema</td>
+        </tr>
+        <tr>
+          <td>V-2</td>
+          <td class="wrap">Arena fixes this session to branch <code>arena/5e124cc4-alert1</code></td>
+          <td class="wrap">The brief's <code>session-&lt;id&gt;/&lt;task&gt;</code> branch convention cannot be followed on this platform; only the assigned branch is used.</td>
+          <td class="wrap">Recorded on the shared board and here; no other branch was created and no other session's scope was edited.</td>
+          <td class="wrap"><a href="https://api.github.com/repos/kanlerxz87-cyber/Alert1/branches/arena/5e124cc4-alert1" target="_blank" rel="noopener">GitHub branch API</a></td>
+          <td class="status-flag">Flagged — platform constraint</td>
+        </tr>
+        <tr>
+          <td>V-3</td>
+          <td class="wrap">StatsAPI <code>fields</code> projection caveat</td>
+          <td class="wrap">Projecting <code>reviewDetails</code> without its child keys returns <code>{}</code> even though the full official payload has values.</td>
+          <td class="wrap">Re-queried with <code>reviewType,isOverturned,challengeTeamId</code>; the audit table uses only complete projections. This is a query artifact, not missing official data.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/game/823506/playByPlay?fields=allPlays,atBatIndex,about,playEvents,reviewDetails,reviewType,isOverturned,challengeTeamId" target="_blank" rel="noopener">projected game/823506/playByPlay</a></td>
+          <td class="status-ok">Verified — tooling caveat</td>
+        </tr>
+        <tr>
+          <td>V-4</td>
+          <td class="wrap">GitHub Pages cannot serve the optional <code>/api/feed-log*</code> endpoints</td>
+          <td class="wrap">Pages configuration is static-only; the feed-log API exists only in <code>node server.mjs</code>.</td>
+          <td class="wrap"><code>FeedLog.isStaticHost()</code> keeps deployed pages from calling those endpoints; local server behavior is unchanged and covered by tests.</td>
+          <td class="wrap"><a href="https://api.github.com/repos/kanlerxz87-cyber/Alert1/pages" target="_blank" rel="noopener">Alert1 Pages API</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/feed-log.js" target="_blank" rel="noopener">feed-log.js</a></td>
+          <td class="status-ok">Verified — by design</td>
+        </tr>
+        <tr>
+          <td>V-5</td>
+          <td class="wrap">Before-review scores for <code>2026-08-26</code> were not observed</td>
+          <td class="wrap">Both deployments display <strong>not observed before ruling</strong>; the official API does not publish a before-review score for these landed reviews.</td>
+          <td class="wrap">Cell left blank / explicitly marked unobserved; no before-score inferred or filled in.</td>
+          <td class="wrap"><a href="https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26" target="_blank" rel="noopener">reference replay</a> · <a href="https://kanlerxz87-cyber.github.io/Alert1/reviews.html?date=2026-08-26" target="_blank" rel="noopener">Alert1 replay</a></td>
+          <td class="status-flag">Unverified — left blank</td>
+        </tr>
+        <tr>
+          <td>V-6</td>
+          <td class="wrap">Source-tree differences from upstream</td>
+          <td class="wrap">40 upstream blobs vs 43 local blobs: 21 byte-identical, 19 modified by earlier documented fixes, 3 local-only verification files.</td>
+          <td class="wrap">Line-by-line diff found no new functional defect in this pass; no functional code change was made by this session.</td>
+          <td class="wrap"><a href="https://api.github.com/repos/snapquast73-boop/LIVPBP/git/trees/5c02527d3c7a56ea66c698cfabff80a407b6dfd3?recursive=1" target="_blank" rel="noopener">upstream recursive tree</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/COORDINATION.md" target="_blank" rel="noopener">COORDINATION.md</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
+
+  <footer class="site-footer">
+    <p>
+      Unofficial fan project. Data via the public MLB StatsAPI
+      (<a href="https://statsapi.mlb.com" target="_blank" rel="noopener">statsapi.mlb.com</a>).
+      Not affiliated with MLB or MLB Advanced Media.
+      Verification log: <a href="docs/verification-report.md">docs/verification-report.md</a> ·
+      coordination: <a href="COORDINATION.md">COORDINATION.md</a> ·
+      integration record: <a href="COORDINATION.md#session-5e124cc4--final-integration-record-2026-11-25">PR #14 merge/deploy</a>.
+    </p>
+  </footer>
+</body>
+</html>
