@@ -18,7 +18,7 @@ into `main`. The deviation is published on [`flagged.html`](https://kanlerxz87-c
 
 | ID | Task | Status | Owner | File scope | Notes / Official Source |
 |---|---|---|---|---|---|
-| G-1 | Independent local review of copied-site provenance, source-link coverage checks, and test/build readiness; document results and any limits without changing shared site/data files | `in progress` | `f0bea661` | `audit/independent-review-2026-11-25.md`, `COORDINATION.md` | Scope is limited to new audit documentation and this board; prior site/source-verification tasks are complete. Upstream source: https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3 |
+| G-1 | Independent local review of copied-site provenance, source-link coverage checks, and test/build readiness; document results and any limits | `in progress` | `f0bea661` | `audit/independent-review-2026-11-25.md`, `flagged.html`, `COORDINATION.md` | Scope is limited to audit documentation, one verification-limit flag, and this board; prior site/source-verification tasks are complete. Upstream source: https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3 |
 
 ## Active task board — session `fae80285` (2026-11-25)
 
