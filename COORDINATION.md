@@ -22,7 +22,7 @@ The deviation is published as C-7 on the Flagged for Review page.
 | C-3 Line-by-line review vs official sources | done | `c394a038` | `assets/js/*.js`, HTML pages, `server.mjs`, workflows | Report §8.1: https://github.com/kanlerxz87-cyber/Alert1/blob/arena/c394a038-alert1/docs/verification-report.md |
 | C-4 Verify table rows' source links; blank + flag unverified values | done | `c394a038` | `flagged.html`, `docs/verification-report.md` | 106 data rows §§1–14 + 8 new rows §15 checked; 0 without a source link |
 | C-5 Make Pages deployment work for upcoming game days | done | `c394a038` | `404.html`, `package.json`, README, workflows | Base path `/LIVPBP/` → `/Alert1/`; other deployment fixes kept from PR #1 |
-| C-6 Full checks, live pages, PR → merge → Pages deploy | in progress | `c394a038` | repo root | Checks pass; integration PR pending |
+| C-6 Full checks, live pages, PR → merge → Pages deploy | done | `c394a038` | repo root | PR #2 merged; Pages `built`; live pages and upcoming game day verified |
 
 ## Verification performed by `c394a038`
 
