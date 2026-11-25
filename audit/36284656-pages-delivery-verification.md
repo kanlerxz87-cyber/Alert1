@@ -68,4 +68,19 @@ Field-projected requests (same official endpoint) used for the score checks:
 
 ## H-3 — Integration record
 
-Pending: PR/merge/Pages-deployment evidence will be appended here after autonomous integration.
+PR [#15](https://github.com/kanlerxz87-cyber/Alert1/pull/15) was opened from `arena/36284656-alert1`,
+merged autonomously into `main` as `ac588dd9fa153452711fd556cf37a9bac0e639f1` at 2026-11-25T22:08:59Z,
+and the site was re-verified after deployment.
+
+| # | Integration check | Result | Source |
+|---|---|---|---|
+| H3-1 | Pre-merge PR checks | `Site checks` run `45710381054` (`test` + `dom-smoke`) `success`; mergeable state `clean` | [PR #15](https://github.com/kanlerxz87-cyber/Alert1/pull/15) · [Check run](https://github.com/kanlerxz87-cyber/Alert1/actions/runs/45710381054) |
+| H3-2 | Merge result | PR #15 `MERGED` at `ac588dd`; `COORDINATION.md` + this audit were the only files authored by this session | [PR #15](https://github.com/kanlerxz87-cyber/Alert1/pull/15) |
+| H3-3 | Final Pages build | Latest Pages build `c792cc7179490ae1e9aa8a9f50a0246855922c96`, status `built` | [Pages builds API](https://api.github.com/repos/kanlerxz87-cyber/Alert1/pages/builds/latest) |
+| H3-4 | Final deployment workflows | `pages build and deployment` run `45710722731` `success`; `Published Pages delivery` run `45710862856` `success` | [Check run](https://github.com/kanlerxz87-cyber/Alert1/actions/runs/45710722731) · [Check run](https://github.com/kanlerxz87-cyber/Alert1/actions/runs/45710862856) |
+| H3-5 | Published audit file after deploy | This audit is served at the published URL | [Published audit](https://kanlerxz87-cyber.github.io/Alert1/audit/36284656-pages-delivery-verification.md?v=c792cc7) |
+| H3-6 | Published replay feed after deploy | Still 15 games / 78 tracked entries with the same 10 rows and official source links | [Published replay feed](https://kanlerxz87-cyber.github.io/Alert1/reviews.html?date=2026-08-26&v=c792cc7) |
+| H3-7 | Published upcoming scoreboard after deploy | Still 17 games for `2027-02-19` with no manual input | [Published scoreboard](https://kanlerxz87-cyber.github.io/Alert1/?date=2027-02-19&v=c792cc7) |
+
+All suites were also run locally after each parallel merge (restoration, 69 smoke checks,
+`run-all.mjs`, both provenance suites); all passed. No site defect was introduced by this session.
