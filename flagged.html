@@ -41,6 +41,14 @@
       </p>
     </div>
 
+    <p style="color:var(--muted);font-size:13px">
+      <strong>This repository is a copy.</strong> Sections 1–14 are the upstream project's historical
+      verification record, preserved verbatim with its original source links. Section 15 below is
+      the line-by-line verification of this copy, made on 2026-11-25 from
+      <a href="https://github.com/snapquast73-boop/LIVPBP/commit/5c02527d3c7a56ea66c698cfabff80a407b6dfd3" target="_blank" rel="noopener">upstream commit 5c02527</a>.
+      Full detail: <a href="docs/verification-report.md">docs/verification-report.md</a> · <a href="COORDINATION.md">COORDINATION.md</a>.
+    </p>
+
     <h2>1. Verified against official sources</h2>
     <p style="color:var(--muted);font-size:13px">
       Every row was fetched on 2026-11-20 from <code>statsapi.mlb.com</code> (the public data service
@@ -968,6 +976,94 @@ node server.mjs                  # optional persistence backend (feed log + SSE)
       <code>node tests/props-provenance-test.mjs</code> → 5 passed. Earlier items
       (U-1…U-11, I-8, F-001…F-009, L-1…L-4, RR-01…RR-06, D-1…D-4, AF-1…AF-7) keep their status above;
       RR-05 is answered by R2-3.
+    </p>
+
+    <h2>15. This copy of the working site (session <code>c394a038</code>, 2026-11-25)</h2>
+    <p style="color:var(--muted);font-size:13px">
+      The site was copied from the public
+      <a href="https://github.com/snapquast73-boop/LIVPBP/commit/5c02527d3c7a56ea66c698cfabff80a407b6dfd3" target="_blank" rel="noopener">LIVPBP source revision 5c02527</a>
+      and compared with the <a href="https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26" target="_blank" rel="noopener">reference replay feed</a>.
+      Every data row below carries its source. Where the official payload publishes no value, the
+      cell is blank and the item is flagged — nothing is inferred. The complete file-by-file and
+      row-by-row record is in <a href="docs/verification-report.md#8-copy-of-the-working-site-into-kanlerxz87-cyberalert1--session-c394a038-2026-11-25">docs/verification-report.md §8</a>.
+    </p>
+    <table class="verify">
+      <thead>
+        <tr><th>#</th><th>Item / finding</th><th>What the source shows</th><th>What this copy does</th><th>Source</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>C-1</td>
+          <td class="wrap">Source tree copied from the working site.</td>
+          <td class="wrap">All tracked files at upstream commit <code>5c02527</code>: pages, nine assets, server, tests, tools, docs and audit.</td>
+          <td class="wrap">Copied verbatim; only this board, README URLs, <code>package.json</code> homepage and the 404 base path were adapted. Upstream board archived in <code>docs/upstream-COORDINATION.md</code>.</td>
+          <td class="wrap"><a href="https://api.github.com/repos/snapquast73-boop/LIVPBP/git/trees/5c02527d3c7a56ea66c698cfabff80a407b6dfd3?recursive=1" target="_blank" rel="noopener">upstream tree @ 5c02527 (GitHub API)</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>C-2</td>
+          <td class="wrap">Replay rows on the reference date come from official review payloads.</td>
+          <td class="wrap"><code>MF</code> (PHI @ SEA Bot 5, challengeTeamId 136), <code>MA</code> (CIN @ SF Top 7, challengeTeamId 137) and <code>NF</code> (CIN @ SF Top 9) all carry the same descriptions and <code>isOverturned:false</code>.</td>
+          <td class="wrap">Same live payloads drive the copied feed; each rendered row links to that game's official <code>/playByPlay</code>. Unobserved Before scores remain blank.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/game/823096/playByPlay" target="_blank" rel="noopener">823096 playByPlay</a> · <a href="https://statsapi.mlb.com/api/v1/game/823180/playByPlay" target="_blank" rel="noopener">823180 playByPlay</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>C-3</td>
+          <td class="wrap">Schedule, score and challenge counters.</td>
+          <td class="wrap">15 games on 2026-08-26; CIN 10 – SF 9; SF <code>review.home:{used:1,remaining:0}</code>, CIN <code>review.away:{used:0,remaining:1}</code>; ABS counters present.</td>
+          <td class="wrap">Read from the live schedule / feed as-is; no counter is derived by counting feed events or zero-filled when absent.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2026-08-26&amp;hydrate=review" target="_blank" rel="noopener">schedule 2026-08-26</a> · <a href="https://statsapi.mlb.com/api/v1/game/823180/linescore" target="_blank" rel="noopener">823180 linescore</a> · <a href="https://statsapi.mlb.com/api/v1.1/game/823180/feed/live?fields=gameData,review,absChallenges,hasChallenges,away,home,used,remaining,usedSuccessful,usedFailed" target="_blank" rel="noopener">823180 counters</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>C-4</td>
+          <td class="wrap">Review types and club abbreviations shown by the UI.</td>
+          <td class="wrap">The <code>gameStatus</code> registry publishes the wording and reasons for <code>MF</code>/<code>MA</code>/<code>NF</code>; the teams endpoint publishes all 30 id→abbreviation pairs used by the UI.</td>
+          <td class="wrap">Fallback labels stay aligned with the registry; all 30 copied abbreviations matched the official response.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/gameStatus" target="_blank" rel="noopener">gameStatus registry</a> · <a href="https://statsapi.mlb.com/api/v1/teams?sportId=1&amp;fields=teams,id,name,abbreviation&amp;season=2026" target="_blank" rel="noopener">teams 2026</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>C-5</td>
+          <td class="wrap">Upstream 404 page hard-coded <code>/LIVPBP/</code> as its Pages base.</td>
+          <td class="wrap">This repository is published under <code>/Alert1/</code> by GitHub Pages.</td>
+          <td class="wrap">Fixed: the base expression now uses <code>/Alert1/</code> on Pages and <code>/</code> locally; all other upstream line content unchanged.</td>
+          <td class="wrap"><a href="https://github.com/snapquast73-boop/LIVPBP/blob/5c02527d3c7a56ea66c698cfabff80a407b6dfd3/404.html" target="_blank" rel="noopener">upstream 404.html</a> · <a href="https://api.github.com/repos/kanlerxz87-cyber/Alert1/pages" target="_blank" rel="noopener">this repo's Pages config</a></td>
+          <td class="status-ok">Fixed</td>
+        </tr>
+        <tr>
+          <td>C-6</td>
+          <td class="wrap">README's <code>v1.0.0-stable-checkpoint</code> tag is an upstream artefact.</td>
+          <td class="wrap">The tag exists upstream; this repository's tag list has no such tag.</td>
+          <td class="wrap">Copy note added to README. No tag, version or commit was invented for this repository.</td>
+          <td class="wrap"><a href="https://api.github.com/repos/snapquast73-boop/LIVPBP/tags" target="_blank" rel="noopener">upstream tags</a> · <a href="https://api.github.com/repos/kanlerxz87-cyber/Alert1/tags" target="_blank" rel="noopener">this repo's tags</a></td>
+          <td class="status-flag">Flagged</td>
+        </tr>
+        <tr>
+          <td>C-7</td>
+          <td class="wrap">Arena fixes this session to one branch; the brief asks for <code>session-&lt;id&gt;/&lt;task&gt;</code> branches.</td>
+          <td class="wrap">The assigned branch is <code>arena/c394a038-alert1</code>; no other branch was created or pushed.</td>
+          <td class="wrap">Recorded on the shared board rather than emulating branches that Arena would reject.</td>
+          <td class="wrap"><a href="https://api.github.com/repos/kanlerxz87-cyber/Alert1/branches/arena/c394a038-alert1" target="_blank" rel="noopener">branch via GitHub API</a> · <a href="COORDINATION.md">COORDINATION.md</a></td>
+          <td class="status-flag">Flagged</td>
+        </tr>
+        <tr>
+          <td>C-8</td>
+          <td class="wrap">Values the official sources do not publish (club colours, forecast constants, lost original wording, cross-browser persistence).</td>
+          <td class="wrap"></td>
+          <td class="wrap">Left blank and carried forward as U-1 / U-2 / U-9 / U-11; no value inferred or filled in.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/teams?sportId=1" target="_blank" rel="noopener">official teams payload (no colours)</a> · <a href="https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages" target="_blank" rel="noopener">GitHub Pages (static hosting)</a></td>
+          <td class="status-unverified">Unverified — flagged</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="color:var(--muted);font-size:13px">
+      Checks run on the copy: <code>npm ci</code> · <code>npm test</code> (64 passed) ·
+      <code>node tests/run-all.mjs</code> (syntax, links, bindings and jsdom render OK) ·
+      <code>node tools/restoration-check.mjs</code> (ALL CHECKS PASSED) ·
+      <code>node tests/props-provenance-test.mjs</code>. Live Pages verification is recorded in
+      <a href="COORDINATION.md">COORDINATION.md</a> after deployment.
     </p>
 
   </main>
