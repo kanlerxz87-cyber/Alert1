@@ -1229,6 +1229,150 @@ console.log('\n[13] reference-parity fixes (session 6e2a58d9: G-2…G-5, G-9)');
   dom.window.close();
 }
 
+/* =========================================================================
+ * [14] Alert1 upcoming-game-day & provenance regressions (session df7b58c1)
+ * ========================================================================= */
+console.log('\n[14] Alert1 upcoming-game-day & provenance regressions (df7b58c1)');
+{
+  await check('A1-3: startTimeTBD games render TBD (never dummy :33 AM time) on index.html & game.html', async () => {
+    const tbdSchedule = {
+      totalGames: 1,
+      dates: [{
+        date: '2027-03-25',
+        games: [{
+          gamePk: 854131,
+          gameDate: '2027-03-25T08:33:00Z',
+          officialDate: '2027-03-25',
+          status: { abstractGameState: 'Preview', detailedState: 'Scheduled', statusCode: 'S', startTimeTBD: true },
+          teams: {
+            away: { team: { id: 114, name: 'Cleveland Guardians' }, leagueRecord: { wins: 0, losses: 0 } },
+            home: { team: { id: 112, name: 'Chicago Cubs' }, leagueRecord: { wins: 0, losses: 0 } },
+          },
+          venue: { name: 'Wrigley Field' },
+          seriesGameNumber: 1,
+          gamesInSeries: 3,
+        }],
+      }],
+    };
+    const tbdFeed = {
+      gamePk: 854131,
+      gameData: {
+        datetime: { dateTime: '2027-03-25T08:33:00Z', officialDate: '2027-03-25' },
+        status: { abstractGameState: 'Preview', detailedState: 'Scheduled', statusCode: 'S', startTimeTBD: true },
+        teams: {
+          away: { id: 114, name: 'Cleveland Guardians', abbreviation: 'CLE', record: { wins: 0, losses: 0 } },
+          home: { id: 112, name: 'Chicago Cubs', abbreviation: 'CHC', record: { wins: 0, losses: 0 } },
+        },
+        venue: { name: 'Wrigley Field' },
+        players: {},
+        review: { away: {}, home: {} },
+      },
+      liveData: { plays: { allPlays: [] }, linescore: { innings: [], teams: { away: {}, home: {} } }, boxscore: { teams: { away: { players: {} }, home: { players: {} } } } },
+    };
+    const tbdFetch = (url) => {
+      const u = String(url);
+      if (u.includes('/schedule?')) return Promise.resolve({ ok: true, status: 200, headers: { get: () => null }, json: async () => tbdSchedule });
+      if (u.includes('/feed/live')) return Promise.resolve({ ok: true, status: 200, headers: { get: () => null }, json: async () => tbdFeed });
+      return routeFetch(u);
+    };
+
+    const sbDom = await boot('index.html?date=2027-03-25', { fetchImpl: tbdFetch });
+    await new Promise((r) => setTimeout(r, 300));
+    const cardText = text(sbDom.window.document.getElementById('game-list'));
+    assert(cardText.includes('TBD'), 'scoreboard TBD game must display TBD: ' + cardText);
+    assert(!/:33/.test(cardText), 'scoreboard must not display dummy :33 timestamp for startTimeTBD: ' + cardText);
+    sbDom.window.close();
+
+    const gDom = await boot('game.html?gamePk=854131&date=2027-03-25', { fetchImpl: tbdFetch });
+    await new Promise((r) => setTimeout(r, 300));
+    const headerText = text(gDom.window.document.getElementById('header-center')) + ' ' + text(gDom.window.document.getElementById('header-meta'));
+    const liveText = text(gDom.window.document.getElementById('live-panel'));
+    assert(headerText.includes('TBD') && liveText.includes('TBD'), 'game.html TBD game must display TBD');
+    assert(!/:33/.test(headerText) && !/:33/.test(liveText), 'game.html must not display dummy :33 timestamp');
+    gDom.window.close();
+  });
+
+  await check('A1-4: managerCounters and absCounters treat null / empty string as null (never zero-fill)', async () => {
+    const dom = await boot('reviews.html', { beforeParse(w) { w.localStorage.clear(); } });
+    const R = dom.window.Reviews;
+    const mgr = R.managerCounters({ hasChallenges: false, away: { used: null, remaining: '' }, home: { used: undefined, remaining: null } });
+    assert(mgr.away.used === null && mgr.away.remaining === null, 'null/empty manager counters must stay null');
+    assert(mgr.home.used === null && mgr.home.remaining === null, 'undefined/null manager counters must stay null');
+    const abs = R.absCounters({ hasChallenges: false, away: { usedSuccessful: null, usedFailed: '', remaining: null }, home: {} });
+    assert(abs.away.usedSuccessful === null && abs.away.usedFailed === null && abs.away.remaining === null, 'null/empty ABS counters must stay null');
+    dom.window.close();
+  });
+
+  await check('A1-5 + A1-6: non-empty game day skips premature scheduleRange, stamps officialDate, and backs off non-live scans', async () => {
+    let rangeCalls = 0;
+    const finalSchedule = {
+      totalGames: 1,
+      dates: [{
+        date: '2026-08-26',
+        games: [{
+          gamePk: 823109,
+          gameDate: '2026-08-26T20:00:00Z',
+          officialDate: '2026-08-26',
+          status: { abstractGameState: 'Final', detailedState: 'Final', statusCode: 'F' },
+          teams: {
+            away: { team: { id: 113, name: 'Cincinnati Reds' }, score: 10 },
+            home: { team: { id: 137, name: 'San Francisco Giants' }, score: 9 },
+          },
+        }],
+      }],
+    };
+    const trackedFetch = (url) => {
+      const u = String(url);
+      if (u.includes('startDate=')) rangeCalls += 1;
+      if (u.includes('/schedule?')) return Promise.resolve({ ok: true, status: 200, headers: { get: () => null }, json: async () => finalSchedule });
+      return routeFetch(u);
+    };
+    const rfDom = await boot('reviews.html?date=2026-08-26', { fetchImpl: trackedFetch, beforeParse(w) { w.localStorage.clear(); } });
+    await new Promise((r) => setTimeout(r, 450));
+    assert(rangeCalls === 0, 'non-empty game day must not trigger spurious scheduleRange call (got ' + rangeCalls + ')');
+    const st = rfDom.window.ReplayFeed.state;
+    assert(st.scheduleLoaded === true, 'scheduleLoaded should be true after scan resolves');
+    assert(st.entries.length > 0 && st.entries.every((e) => e.officialDate === '2026-08-26'), 'every ingested entry must carry officialDate');
+    assert(st.nextScanAt - st.lastScanAt >= 900, 'non-live Final slate should back off scan delay beyond 250 ms');
+    rfDom.window.close();
+  });
+
+  await check('A1-6: game.html skips 125 ms gameStatusLean polling after a Final feed loads', async () => {
+    let leanCallsAfterLoad = 0;
+    let loaded = false;
+    const baseFeed = await (await routeFetch('https://statsapi.mlb.com/api/v1.1/game/823109/feed/live')).json();
+    const finalFeed = JSON.parse(JSON.stringify(baseFeed));
+    finalFeed.gameData.status = { abstractGameState: 'Final', detailedState: 'Final', statusCode: 'F' };
+    const finalFetch = (url) => {
+      const u = String(url);
+      if (u.includes('fields=gameData,status')) {
+        if (loaded) leanCallsAfterLoad += 1;
+        return Promise.resolve({ ok: true, status: 200, headers: { get: () => null }, json: async () => ({ gameData: { status: finalFeed.gameData.status } }) });
+      }
+      if (u.includes('/feed/live')) {
+        loaded = true;
+        return Promise.resolve({ ok: true, status: 200, headers: { get: () => null }, json: async () => finalFeed });
+      }
+      return routeFetch(u);
+    };
+    const gDom = await boot('game.html?gamePk=823109&date=2026-08-26', { fetchImpl: finalFetch });
+    await new Promise((r) => setTimeout(r, 500));
+    assert(leanCallsAfterLoad === 0, 'Final game must not fire 125 ms gameStatusLean sweeps (got ' + leanCallsAfterLoad + ')');
+    gDom.window.close();
+  });
+
+  await check('A1-1: 404.html injects <base href="/Alert1/"> under /Alert1/ nested paths', async () => {
+    const html404 = await fs.readFile(path.join(ROOT, '404.html'), 'utf8');
+    const dom404 = new JSDOM(html404, {
+      url: 'https://kanlerxz87-cyber.github.io/Alert1/missing/deep/path',
+      runScripts: 'dangerously',
+    });
+    const base = dom404.window.document.querySelector('base');
+    assert(base && base.getAttribute('href') === '/Alert1/', 'expected <base href="/Alert1/">, got ' + (base && base.getAttribute('href')));
+    dom404.window.close();
+  });
+}
+
 function __setDate(dom) {
   const picker = dom.window.document.getElementById('date-picker');
   if (picker) {
