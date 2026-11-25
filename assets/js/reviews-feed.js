@@ -71,6 +71,7 @@
     counterCache: Object.create(null),
     absFetchedRevCount: Object.create(null),
     lastGameDate: undefined,
+    nextGameDate: undefined,
     lookingForRecent: false,
   };
 
@@ -858,26 +859,33 @@
     var reqSeq = state.dateSeq;
     var reqDate = state.date;
     var from = MLB.shiftISODate(reqDate, -180);
-    MLB.scheduleRange(from, reqDate)
+    var to = MLB.shiftISODate(reqDate, 180);
+    MLB.scheduleRange(from, to)
       .then(function (payload) {
         if (reqSeq !== state.dateSeq || reqDate !== state.date) return;
         var dates = ((payload && payload.dates) || []).filter(function (d) {
-          return d && d.totalGames > 0;
+          return d && d.date && d.totalGames > 0;
         });
-        state.lastGameDate = dates.length ? dates[dates.length - 1].date : null;
+        var past = dates.filter(function (d) { return d.date <= reqDate; });
+        var upcoming = dates.filter(function (d) { return d.date > reqDate; });
+        state.lastGameDate = past.length ? past[past.length - 1].date : null;
+        state.nextGameDate = upcoming.length ? upcoming[0].date : null;
       })
       .catch(function () {
-        if (reqSeq === state.dateSeq && reqDate === state.date) state.lastGameDate = null;
+        if (reqSeq === state.dateSeq && reqDate === state.date) {
+          state.lastGameDate = null;
+          state.nextGameDate = null;
+        }
       })
       .then(function () {
         if (reqSeq !== state.dateSeq || reqDate !== state.date) return;
         state.lookingForRecent = false;
-        if (state.lastGameDate) render();
+        if (state.lastGameDate || state.nextGameDate) render();
       });
   }
 
   function entriesSignature() {
-    return state.filter + '|' + (state.scheduleLoaded ? '1' : '0') + '|' + state.games.length + '|' + (state.lastGameDate || '') + '|' + state.entries.map(function (e) {
+    return state.filter + '|' + (state.scheduleLoaded ? '1' : '0') + '|' + state.games.length + '|' + (state.lastGameDate || '') + '|' + (state.nextGameDate || '') + '|' + state.entries.map(function (e) {
       return [e.id, e.lastSeen, e.review && e.review.outcome, e.review && e.review.inProgress,
         e.scoreTracker && e.scoreTracker.actual ? e.scoreTracker.actual.away + '-' + e.scoreTracker.actual.home : '',
         e.scoreTracker && e.scoreTracker.before ? e.scoreTracker.before.away + '-' + e.scoreTracker.before.home : ''].join(':');
@@ -929,6 +937,11 @@
             ? '<div style="margin-top:10px">Most recent date with games: ' +
               UI.esc(MLB.formatDateLabel(state.lastGameDate)) + ' ' +
               '<button class="btn" onclick="ReplayFeed.setDate(\'' + state.lastGameDate + '\')">Show it</button></div>'
+            : '') +
+          (state.nextGameDate
+            ? '<div style="margin-top:8px">Next scheduled game day: ' +
+              UI.esc(MLB.formatDateLabel(state.nextGameDate)) + ' ' +
+              '<button class="btn" onclick="ReplayFeed.setDate(\'' + state.nextGameDate + '\')">Show it</button></div>'
             : '') +
           '</div>';
         offerRecentDate();
@@ -992,6 +1005,7 @@
     state.counterCache = Object.create(null);
     state.absFetchedRevCount = Object.create(null);
     state.lastGameDate = undefined;
+    state.nextGameDate = undefined;
     state.lookingForRecent = false;
     state.log = null;
     state.lastRenderSignature = '';

@@ -1177,6 +1177,69 @@ node server.mjs                  # optional persistence backend (feed log + SSE)
       <code>node tools/restoration-check.mjs</code> (ALL CHECKS PASSED).
     </p>
 
+    <h2>17. Play-level <code>2026-08-26</code> MLB StatsAPI irregularities, static-host <code>FeedLog</code> guard &amp; upcoming-date jump (session <code>fae80285</code>, 2026-11-25)</h2>
+    <p style="color:var(--muted);font-size:13px">
+      Session <code>fae80285</code> inspected all 10 non-ABS review plays on <code>2026-08-26</code> verbatim against
+      <code>statsapi.mlb.com/api/v1/game/{gamePk}/playByPlay</code>, verified the 360-day schedule range
+      (<code>2026-05-29</code>..<code>2027-05-24</code>) and 2027 club/player endpoints, and audited static-host
+      <code>FeedLog</code> behavior on <code>kanlerxz87-cyber.github.io</code>. Full line-by-line table:
+      <a href="audit/alert1-live-verification-2026-11-25.md">audit/alert1-live-verification-2026-11-25.md</a>.
+    </p>
+    <table class="flagged-table">
+      <thead>
+        <tr>
+          <th style="width:62px">#</th>
+          <th>Item / Irregularity</th>
+          <th>Official Source Payload</th>
+          <th>Disposition in <code>Alert1</code></th>
+          <th>Official Source Link</th>
+          <th style="width:128px">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>F-1</td>
+          <td class="wrap"><code>823506:56:0:MA</code> (<code>HOU @ NYY</code>, Bot 7, <code>atBatIndex: 56</code>, <code>playEvents[0]</code>) omits challenge narrative in official <code>details.description</code></td>
+          <td class="wrap"><code>playEvents[0]</code>: <code>{"details":{"description":"Pickoff Attempt 1B"},"reviewDetails":{"isOverturned":false,"inProgress":false,"reviewType":"MA","challengeTeamId":117}}</code>; <code>result.description</code>: <code>"Ben Rice walks. Trent Grisham to 2nd."</code></td>
+          <td class="wrap"><strong>Flagged (upstream source data preserved verbatim):</strong> structured <code>reviewDetails</code> supplies challenger (<code>HOU</code>), type (<code>Manager Challenge · Tag play</code>), and ruling (<code>Stands</code>); description is rendered verbatim (<code>"Pickoff Attempt 1B"</code>) rather than inventing prose.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/game/823506/playByPlay" target="_blank" rel="noopener">game/823506/playByPlay</a></td>
+          <td class="status-flag">Flagged — upstream schema</td>
+        </tr>
+        <tr>
+          <td>F-2</td>
+          <td class="wrap"><code>823506:19:5:NH</code> (<code>HOU @ NYY</code>, Bot 2, <code>atBatIndex: 19</code>, <code>playEvents[5]</code>) attaches umpire home-run boundary review directly to a <code>"Foul"</code> pitch event</td>
+          <td class="wrap"><code>playEvents[5]</code>: <code>{"details":{"description":"Foul"},"reviewDetails":{"isOverturned":false,"inProgress":false,"reviewType":"NH"}}</code>; PA ends one pitch later with <code>"Luis García Jr. flies out to left fielder Taylor Trammell."</code></td>
+          <td class="wrap"><strong>Flagged (upstream source data preserved verbatim):</strong> classified as <code>Umpire Review · Home run</code> + <code>Boundary call</code> + <code>Stands</code> from official <code>reviewType: "NH"</code>; pitch description kept verbatim as <code>"Foul"</code> without fabricating narrative text.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/game/823506/playByPlay" target="_blank" rel="noopener">game/823506/playByPlay</a> · <a href="https://statsapi.mlb.com/api/v1/gameStatus" target="_blank" rel="noopener">api/v1/gameStatus (NH)</a></td>
+          <td class="status-flag">Flagged — upstream schema</td>
+        </tr>
+        <tr>
+          <td>F-3</td>
+          <td class="wrap"><code>823180:84:p:NF</code> (<code>CIN @ SF</code>, Top 9, <code>atBatIndex: 84</code>) combines two simultaneous crew reviews into a single <code>reviewDetails</code> object</td>
+          <td class="wrap"><code>result.description</code>: <code>"Umpire reviewed (play at 1st), call on the field was upheld: Umpire reviewed (slide interference), call on the field was upheld: Héctor Rodríguez grounds into a force out…"</code>; <code>reviewDetails</code>: <code>{"isOverturned":false,"inProgress":false,"reviewType":"NF"}</code></td>
+          <td class="wrap"><strong>Flagged (upstream schema limitation):</strong> MLB's single-object <code>reviewDetails</code> carries only <code>reviewType: "NF"</code> (Close play at 1st), while the full official <code>result.description</code> preserves both reviewed calls verbatim on the row.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/game/823180/playByPlay" target="_blank" rel="noopener">game/823180/playByPlay</a></td>
+          <td class="status-flag">Flagged — upstream schema</td>
+        </tr>
+        <tr>
+          <td>F-4</td>
+          <td class="wrap"><code>FeedLog.openStream()</code> and <code>FeedLog.postNow()</code> lacked <code>isStaticHost()</code> guards on <code>*.github.io</code></td>
+          <td class="wrap">GitHub Pages deployment is static-only (<code>build_type: "legacy"</code>); <code>/api/feed-log/stream</code> exists only when running <code>node server.mjs</code> locally</td>
+          <td class="wrap"><strong>Bug found &amp; fixed:</strong> <code>scoreboard.js</code> called <code>FeedLog.openStream()</code> before <code>loadServer()</code> set <code>apiState.checked = true</code>, firing root-absolute <code>/api/feed-log/stream</code> 404 requests on <code>kanlerxz87-cyber.github.io</code>. Guarded both <code>openStream()</code> and <code>postNow()</code> with <code>isStaticHost()</code> (tested in <code>tests/alert1-feedlog-and-provenance-test.mjs</code>).</td>
+          <td class="wrap"><a href="https://api.github.com/repos/kanlerxz87-cyber/Alert1/pages" target="_blank" rel="noopener">Alert1 Pages API</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/feed-log.js" target="_blank" rel="noopener">assets/js/feed-log.js</a></td>
+          <td class="status-ok">Fixed &amp; tested</td>
+        </tr>
+        <tr>
+          <td>F-5</td>
+          <td class="wrap">Offseason empty-slate panel only offered past game dates (<code>-180d</code>), omitting upcoming scheduled game days (<code>+180d</code>); Arena fixed branch <code>arena/fae80285-alert1</code></td>
+          <td class="wrap"><code>schedule?sportId=1&amp;startDate=2026-05-29&amp;endDate=2027-05-24</code> returns both <code>2026-10-28</code> (<code>totalGames: 1</code>) and <code>2027-02-19</code> (<code>totalGames: 17</code>) in a single response</td>
+          <td class="wrap"><strong>Enhanced &amp; tested:</strong> <code>scoreboard.js</code> and <code>reviews-feed.js</code> query <code>[-180d, +180d]</code> in one cached request and offer one-click jump buttons to both <strong>Most recent date with games</strong> and <strong>Next scheduled game day</strong>; Arena sandbox branch constraint logged in <a href="COORDINATION.md">COORDINATION.md</a>.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;startDate=2026-05-29&amp;endDate=2027-05-24&amp;fields=dates,date,totalGames" target="_blank" rel="noopener">360-day schedule range</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/COORDINATION.md" target="_blank" rel="noopener">COORDINATION.md</a></td>
+          <td class="status-ok">Verified &amp; tested</td>
+        </tr>
+      </tbody>
+    </table>
+
   </main>
 
   <footer class="site-footer">
