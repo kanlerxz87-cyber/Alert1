@@ -14,6 +14,18 @@ work stays on its assigned branch only (`arena/db1b5438-alert1`, `arena/c394a038
 `arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`); integration is a pull request from that branch
 into `main`. The deviation is published on [`flagged.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) (C-7 / A1-9 / F-5).
 
+## Active task board — session `5e124cc4` (2026-11-25)
+
+Claimed before work began. Arena fixes this session to branch `arena/5e124cc4-alert1`
+(off `e22ec1d`), so the brief's `session-<id>/<task>` branch convention cannot be used; work and
+the final PR stay on this branch. No other session's claimed file scope is edited.
+
+| ID | Task | Status | Owner | File scope | Notes / Official Source |
+|---|---|---|---|---|---|
+| V-1 | Independent line-by-line re-verification of copied source against upstream commit and reference replay page; official-MLB source links for every checked row; publish any new irregularities | `in progress` | `5e124cc4` | `audit/5e124cc4-verification.md`, `flagged.html` | Upstream: https://api.github.com/repos/snapquast73-boop/LIVPBP/commits/5c02527d3c7a56ea66c698cfabff80a407b6dfd3 ; reference: https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26 |
+| V-2 | Verify upcoming-game-day behavior on the live static site (no manual input), fix any defects found and add regression coverage | `in progress` | `5e124cc4` | `assets/js/*.js`, `tests/*`, `tools/*` only if defects are found | Official schedule: https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-11-25&endDate=2027-05-24&fields=dates,date,totalGames |
+| V-3 | Final integration: run every check, PR `arena/5e124cc4-alert1` -> `main`, merge autonomously, verify Pages deployment + live pages, record PR/merge/deploy evidence | `in progress` | `5e124cc4` | `COORDINATION.md`, `.github/workflows/*`, `README.md`, `docs/verification-report.md` | Integration record to be added here when complete |
+
 ## Active task board — session `fae80285` (2026-11-25)
 
 | ID | Task | Status | Owner | File scope | Notes / Official Source |
