@@ -79,4 +79,24 @@ The deviation is published as C-7 on the Flagged for Review page.
 
 ## Integration record (session `c394a038`)
 
-Pending: PR link, merge result and live Pages verification are recorded here after integration.
+**PR [#2](https://github.com/kanlerxz87-cyber/Alert1/pull/2) — MERGED** (`gh pr merge 2 --merge`) into `main` as merge commit
+[`630dae2`](https://github.com/kanlerxz87-cyber/Alert1/commit/630dae226c1f9e956ef1775daeea6bb1c48e314d).
+
+- Pre-merge checks on the PR head: `Site checks` runs `test` (pass) and `dom-smoke` (pass) —
+  https://github.com/kanlerxz87-cyber/Alert1/actions/runs/45698193565.
+- Pages: [`pages/builds/latest`](https://api.github.com/repos/kanlerxz87-cyber/Alert1/pages/builds/latest)
+  → commit `630dae2`, status **built**; [`Published Pages delivery`](https://github.com/kanlerxz87-cyber/Alert1/actions/runs/45698402504)
+  → **success**; [`Site checks` on main](https://github.com/kanlerxz87-cyber/Alert1/actions/45698402499) → success.
+- Live pages: [`/reviews.html?date=2026-08-26`](https://kanlerxz87-cyber.github.io/Alert1/reviews.html?date=2026-08-26&verify=final)
+  matches the [cache-busted reference](https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26&cachebust=c394a038)
+  (15 games, 10 Reviews, 8 Challenges, 2 Umpire reviews, 68 ABS, 1 boundary, 1 run at risk, 78 entries);
+  [`/` scoreboard](https://kanlerxz87-cyber.github.io/Alert1/?date=2026-08-26&verify=final),
+  [`/game.html?gamePk=823180`](https://kanlerxz87-cyber.github.io/Alert1/game.html?gamePk=823180&verify=final)
+  and [`/flagged.html` §15](https://kanlerxz87-cyber.github.io/Alert1/flagged.html?verify=final) all render.
+- Upcoming game day: `2027-04-01` renders 8 scheduled games on the scoreboard and feed, matching
+  https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2027-04-01&fields=dates,date,totalGames,games,gamePk,officialDate,status,teams,team,name
+  — no manual input.
+- Verification caveat: the first fetch of the reference replay URL was a stale cached snapshot
+  (3 rows, `3:38:33 PM`); a cache-busted fetch matched the live deployment. Recorded as C-25.
+- All flagged/unverified items do not block the merge; they remain published on
+  https://kanlerxz87-cyber.github.io/Alert1/flagged.html.
