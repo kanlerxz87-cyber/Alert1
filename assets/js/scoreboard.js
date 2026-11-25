@@ -104,13 +104,17 @@
   }
 
   function loadLog() {
-    return FeedLog.load(state.date).then(function (log) {
+    var reqSeq = state.dateSeq;
+    var reqDate = state.date;
+    return FeedLog.load(reqDate).then(function (log) {
+      if (reqSeq !== state.dateSeq || reqDate !== state.date) return null;
       state.log = log;
       applyLogFlags();
       render();
       return log;
     }).catch(function () {
-      state.log = FeedLog.emptyPayload(state.date);
+      if (reqSeq !== state.dateSeq || reqDate !== state.date) return null;
+      state.log = FeedLog.emptyPayload(reqDate);
       return state.log;
     });
   }
@@ -170,9 +174,12 @@
     if (state.sweepInFlight) return;
     if (document.hidden) return;
     if (!state.games.some(isLive)) return;
+    var sweepSeq = state.dateSeq;
+    var sweepDate = state.date;
     state.sweepInFlight = true;
-    MLB.slateStatus(state.date)
+    MLB.slateStatus(sweepDate)
       .then(function (payload) {
+        if (sweepSeq !== state.dateSeq || sweepDate !== state.date) return;
         var games = flattenGames(payload);
         var changed = false;
         games.forEach(function (g) {
@@ -502,6 +509,7 @@
     var clean = MLB.isValidISODate(date) ? date : MLB.todayISO();
     if (clean === state.date) return;
     state.dateSeq += 1;
+    var seq = state.dateSeq;
     state.date = clean;
     state.scheduleLoaded = false;
     state.lastGameDate = undefined;
@@ -514,12 +522,15 @@
       try { state.abort.abort(); } catch (e) { /* ignore */ }
     }
     state.pollInFlight = false;
+    clearTimeout(state.timers.poll);
     syncNav();
     render();
     statusLine('Loading games for ' + MLB.formatDateLabel(state.date) + '…');
     FeedLog.closeStream();
     FeedLog.openStream(state.date);
-    loadLog().then(fetchSchedule).then(function () { schedulePoll(0); });
+    loadLog().then(function () {
+      if (seq === state.dateSeq && state.date === clean) tick();
+    });
   }
 
   function prevDay() { setDate(MLB.shiftISODate(state.date, -1)); }
@@ -566,9 +577,10 @@
     });
 
     Reviews.loadRegistry();
+    var initSeq = state.dateSeq;
+    var initDate = state.date;
     loadLog().then(function () {
-      fetchSchedule();
-      schedulePoll(LIVE_POLL_MS);
+      if (initSeq === state.dateSeq && state.date === initDate) tick();
       startSweep();
     });
   }
