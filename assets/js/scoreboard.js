@@ -202,25 +202,38 @@
       .then(function () { state.sweepInFlight = false; });
   }
 
-  /* One request, cached 5 min: the latest date in the previous 45 days with
-   * games.  45 days rather than a few days because the MLB calendar has gaps
-   * (All-Star break, the end of the season) where a short window finds nothing
-   * and the visitor is left with an empty scoreboard. */
+  /* One request, cached 5 min: the latest prior date (-180d) and earliest
+   * upcoming date (+180d) with scheduled games, so offseason / break visitors
+   * can jump straight to either the last completed slate or the next upcoming
+   * game day. */
   function offerRecentDate() {
     if (state.lastGameDate !== undefined || state.lookingForRecent) return;
     state.lookingForRecent = true;
-    var from = MLB.shiftISODate(state.date, -180);
-    MLB.scheduleRange(from, state.date)
+    var reqSeq = state.dateSeq;
+    var reqDate = state.date;
+    var from = MLB.shiftISODate(reqDate, -180);
+    var to = MLB.shiftISODate(reqDate, 180);
+    MLB.scheduleRange(from, to)
       .then(function (payload) {
+        if (reqSeq !== state.dateSeq || reqDate !== state.date) return;
         var dates = ((payload && payload.dates) || []).filter(function (d) {
-          return d && d.totalGames > 0;
+          return d && d.date && d.totalGames > 0;
         });
-        state.lastGameDate = dates.length ? dates[dates.length - 1].date : null;
+        var past = dates.filter(function (d) { return d.date <= reqDate; });
+        var upcoming = dates.filter(function (d) { return d.date > reqDate; });
+        state.lastGameDate = past.length ? past[past.length - 1].date : null;
+        state.nextGameDate = upcoming.length ? upcoming[0].date : null;
       })
-      .catch(function () { state.lastGameDate = null; })
+      .catch(function () {
+        if (reqSeq === state.dateSeq && reqDate === state.date) {
+          state.lastGameDate = null;
+          state.nextGameDate = null;
+        }
+      })
       .then(function () {
+        if (reqSeq !== state.dateSeq || reqDate !== state.date) return;
         state.lookingForRecent = false;
-        if (state.lastGameDate) render();
+        if (state.lastGameDate || state.nextGameDate) render();
       });
   }
 
@@ -407,7 +420,8 @@
         state.reviewByPk[g.gamePk] ? state.reviewByPk[g.gamePk].signature : '',
         state.scoringChanges[g.gamePk] || 0].join(':');
     });
-    return state.filter + '|' + state.date + '|' + (state.scheduleLoaded ? '1' : '0') + '|' + bits.join('|');
+    return state.filter + '|' + state.date + '|' + (state.scheduleLoaded ? '1' : '0') + '|' +
+      (state.lastGameDate || '') + '|' + (state.nextGameDate || '') + '|' + bits.join('|');
   }
 
   function renderIfChanged() {
@@ -438,6 +452,11 @@
           ? '<div style="margin-top:10px">Most recent date with games: ' +
             UI.esc(MLB.formatDateLabel(state.lastGameDate)) + ' ' +
             '<button class="btn" onclick="Scoreboard.setDate(\'' + state.lastGameDate + '\')">Show it</button></div>'
+          : '') +
+        (state.nextGameDate
+          ? '<div style="margin-top:8px">Next scheduled game day: ' +
+            UI.esc(MLB.formatDateLabel(state.nextGameDate)) + ' ' +
+            '<button class="btn" onclick="Scoreboard.setDate(\'' + state.nextGameDate + '\')">Show it</button></div>'
           : '') +
         '</div>';
       offerRecentDate();
@@ -486,6 +505,7 @@
     state.date = clean;
     state.scheduleLoaded = false;
     state.lastGameDate = undefined;
+    state.nextGameDate = undefined;
     state.lookingForRecent = false;
     state.reviewByPk = Object.create(null);
     state.scoringChanges = Object.create(null);
