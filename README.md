@@ -1,18 +1,6 @@
-# ⚾ MLB Live PBP — Live MLB Scoreboard & Play-by-Play
+> **Copy notice (2026-11-25):** This repository copies [LIVPBP at commit 5c02527](https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3), matching the [reference replay feed](https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26). The documentation below is inherited from upstream. Session `c394a038` re-verified the live MLB StatsAPI responses and the reference rows; every source link is in [docs/verification-report.md §8](docs/verification-report.md) and on the [Flagged for Review](flagged.html) page. The optional feed-log server is not available on static GitHub Pages; browser local storage is used there. The upstream historical coordination board is preserved in [`audit/upstream-coordination.md`](audit/upstream-coordination.md). The upstream `v1.0.0-stable-checkpoint` tag is not present in this repository and is flagged.
 
-> ### 📋 **COPY NOTE (2026-11-25)** 📋
-> This repository is a copy of the public working site
-> [`snapquast73-boop/LIVPBP`](https://github.com/snapquast73-boop/LIVPBP) at
-> [`5c02527d3c7a56ea66c698cfabff80a407b6dfd3`](https://github.com/snapquast73-boop/LIVPBP/commit/5c02527d3c7a56ea66c698cfabff80a407b6dfd3),
-> made so the site can be iterated on here. The reference page is
-> [`reviews.html?date=2026-08-26`](https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26);
-> the copy is served at [`kanlerxz87-cyber.github.io/Alert1`](https://kanlerxz87-cyber.github.io/Alert1/).
-> Source provenance, the line-by-line verification, and every irregularity are recorded in
-> [`COORDINATION.md`](COORDINATION.md), [`docs/verification-report.md`](docs/verification-report.md),
-> and the [⚑ Flagged for Review](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) page.
-> The upstream `COORDINATION.md` is preserved verbatim as
-> [`docs/upstream-COORDINATION.md`](docs/upstream-COORDINATION.md). The upstream note below is
-> historical; the `v1.0.0-stable-checkpoint` tag it mentions was not copied and is flagged for review.
+# ⚾ MLB Live PBP — Live MLB Scoreboard & Play-by-Play
 
 > ### ♻️ **RESTORATION NOTE (2026-11-20)** ♻️
 > This repository was uploaded incomplete: the three HTML pages referenced a stylesheet and nine
@@ -178,7 +166,7 @@ mlb.com uses, re-implemented from scratch in vanilla HTML/CSS/JS.
 - No build step, no frameworks, no API keys — it runs on **GitHub Pages** (or any static
   host, or even `file://`).
 
-> **Live demo:** [kanlerxz87-cyber.github.io/Alert1](https://kanlerxz87-cyber.github.io/Alert1/)
+> **Live demo:** [snapquast73-boop.github.io/LIVPBP](https://snapquast73-boop.github.io/LIVPBP/)
 > (Restored 2026-11-20: the original author's repo linked here previously is
 > no longer on GitHub — see `flagged.html` items F-002/F-008 and
 > `COORDINATION.md` for the restoration log and flagged irregularities.)

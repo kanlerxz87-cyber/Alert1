@@ -172,7 +172,6 @@ Every item below was uncovered during a line-by-line audit of all HTML pages, JS
 | AF-6 | `server.mjs` & `feed-log.js` `atBatIndex === 0` falsy merge-key collision and `server.mjs` dotfile/symlink static serving | HTTP `403` on `/.git/HEAD`; distinct key `gamePk:0` | **Fixed:** `entryKey()` and `makeKey()` check `!== undefined && !== null && !== ''` so `atBatIndex: 0` never collapses to `""`, `server.mjs` preserves top-level entry fields during merges, and `server.mjs` blocks hidden dotfile paths (except `.nojekyll`) and symlinks (`fs.lstat`). | <https://github.com/snapquast73-boop/LIVPBP/blob/main/server.mjs> | Fixed & regression-tested |
 | AF-7 | Game `824960` (`2026-08-08`, BAL @ ATH, `atBatIndex: 80` Bot 10) carries `reviewDetails: {reviewType: "MJ", challengeTeamId: 110, isOverturned: false}` on a pitch event, yet `result.description` omits challenge wording | `reviewType: "MJ"`, `challengeTeamId: 110` | **Flagged for review:** structured `reviewDetails` and `result.description` differ in verbosity on mid-PA ABS challenges; the app reads structured `reviewDetails` + `challengeTeamId` without inventing missing prose. | <https://statsapi.mlb.com/api/v1/game/824960/playByPlay?fields=allPlays,about,atBatIndex,inning,halfInning,result,description,playEvents,index,details,reviewDetails,isOverturned,inProgress,reviewType,challengeTeamId> | Flagged |
 
-
 ---
 
 ## 8. Copy of the working site into `kanlerxz87-cyber/Alert1` — session `c394a038` (2026-11-25)
@@ -184,7 +183,7 @@ source does not publish is left blank, not inferred.
 **Source revision:** <https://github.com/snapquast73-boop/LIVPBP/commit/5c02527d3c7a56ea66c698cfabff80a407b6dfd3>
 **Reference page:** <https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26>
 **Copy source tree at this revision:** <https://api.github.com/repos/snapquast73-boop/LIVPBP/git/trees/5c02527d3c7a56ea66c698cfabff80a407b6dfd3?recursive=1>
-**Upstream board preserved verbatim:** [`docs/upstream-COORDINATION.md`](upstream-COORDINATION.md)
+**Upstream board preserved verbatim:** [`audit/upstream-coordination.md`](upstream-COORDINATION.md)
 
 ### 8.1 File-by-file inspection and official endpoints
 
