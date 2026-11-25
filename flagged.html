@@ -1385,7 +1385,103 @@ node server.mjs                  # optional persistence backend (feed log + SSE)
       </tbody>
     </table>
 
-    <h2>20. Line-by-line upcoming exhibition &amp; feed/live verification (session <code>da098af9</code>, 2026-11-25)</h2>
+
+    <h2>20. Independent re-verification of the copy &amp; upcoming game days (session <code>62e7077f</code>, 2026-11-25)</h2>
+    <p style="color:var(--muted);font-size:13px">
+      This session re-checked the copy against the exact upstream revision, read all ten non-ABS
+      <code>2026-08-26</code> rows directly from official MLB StatsAPI payloads, and confirmed the
+      offseason / 2027 game-day behavior on the live site without manual input. Full row-by-row
+      evidence: <a href="audit/62e7077f-independent-verification.md">audit/62e7077f-independent-verification.md</a>.
+      Nothing that could not be confirmed from an official payload was filled in.
+    </p>
+    <table class="flagged-table">
+      <thead>
+        <tr>
+          <th style="width:62px">#</th>
+          <th>Item / Irregularity</th>
+          <th>Official Source Payload</th>
+          <th>Disposition in <code>Alert1</code></th>
+          <th>Official Source Link</th>
+          <th style="width:128px">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>S-1</td>
+          <td class="wrap">File-by-file review of the copy against <code>snapquast73-boop/LIVPBP</code> @ <code>5c02527</code></td>
+          <td class="wrap">Markup, CSS, <code>api.js</code>, <code>ui.js</code>, <code>props.js</code>, <code>server.mjs</code> and fixtures are byte-identical; the five modified browser modules differ only by previously documented Alert1 fixes</td>
+          <td class="wrap"><strong>Copy retained:</strong> no new functional defect found; <code>/Alert1/</code> base path, CI checks and verification records are the only deliberate divergences</td>
+          <td class="wrap"><a href="https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3" target="_blank" rel="noopener">upstream source @ 5c02527</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>S-2</td>
+          <td class="wrap">All ten non-ABS replay rows on <code>2026-08-26</code> (play type, challenger, ruling, narrative and after-score)</td>
+          <td class="wrap">Read <code>reviewDetails</code> / <code>playEvents[].reviewDetails</code> and <code>result.awayScore</code>/<code>homeScore</code> for <code>824963</code>, <code>823015</code>, <code>824555</code>, <code>822692</code>, <code>823096</code>, <code>823506</code> and <code>823180</code>; e.g. <code>823096:36:p:MF</code> → <code>{isOverturned:false, reviewType:"MF", challengeTeamId:136}</code>, score <code>6–0</code></td>
+          <td class="wrap"><strong>Verified:</strong> reference and copy show the same ten IDs, wording and official after-scores; before-review values remain blank</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/game/823096/playByPlay?fields=allPlays,about,atBatIndex,result,description,awayScore,homeScore,reviewDetails,isOverturned,inProgress,reviewType,challengeTeamId" target="_blank" rel="noopener">game 823096 playByPlay</a> · <a href="https://statsapi.mlb.com/api/v1/game/823180/playByPlay?fields=allPlays,about,atBatIndex,result,description,awayScore,homeScore,reviewDetails,isOverturned,inProgress,reviewType,challengeTeamId" target="_blank" rel="noopener">game 823180 playByPlay</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>S-3</td>
+          <td class="wrap">Manager / ABS counters shown on the replay rows</td>
+          <td class="wrap"><code>824963</code> home <code>review:{used:1, remaining:1}</code>; <code>823180</code> away <code>1 MGR · 2 ABS</code>, home <code>0 MGR · 1 ABS</code>; <code>823096</code> home <code>{used:1, remaining:0}</code></td>
+          <td class="wrap"><strong>Verified:</strong> counters are read from official <code>gameData</code>, never derived by counting events</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1.1/game/823180/feed/live?fields=gameData,review,absChallenges,hasChallenges,away,home,used,remaining,usedSuccessful,usedFailed" target="_blank" rel="noopener">game 823180 feed/live</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>S-4</td>
+          <td class="wrap">Offseason date (<code>2026-11-25</code>) must lead to the next real game day with no manual input</td>
+          <td class="wrap">Official range <code>2026-05-29</code>..<code>2027-05-24</code>: last prior date <code>2026-10-28</code> (<code>totalGames:1</code>), next date <code>2027-02-19</code> (<code>totalGames:17</code>)</td>
+          <td class="wrap"><strong>Verified live:</strong> both empty-state panels show <em>Most recent date with games</em> and <em>Next scheduled game day</em> jump buttons</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;startDate=2026-05-29&amp;endDate=2027-05-24&amp;fields=dates,date,totalGames" target="_blank" rel="noopener">official schedule range</a> · <a href="https://kanlerxz87-cyber.github.io/Alert1/?date=2026-11-25&amp;verify=62e7077f" target="_blank" rel="noopener">live scoreboard</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>S-5</td>
+          <td class="wrap">Upcoming 2027 slates render from the official schedule</td>
+          <td class="wrap"><code>2027-02-19</code>: <code>totalGames:17</code>; <code>2027-03-25</code>: <code>totalGames:14</code></td>
+          <td class="wrap"><strong>Verified live:</strong> 17 cards on the Spring Training scoreboard; replay feed reports 14 games and 0 tracked events (no rulings published yet)</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2027-03-25&amp;fields=dates,date,totalGames,games,gamePk,gameDate,status,startTimeTBD" target="_blank" rel="noopener">official 2027-03-25 schedule</a> · <a href="https://kanlerxz87-cyber.github.io/Alert1/reviews.html?date=2027-03-25&amp;verify=62e7077f" target="_blank" rel="noopener">live replay feed</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>S-6</td>
+          <td class="wrap">Cache-busted parity check against the reference replay page</td>
+          <td class="wrap">Both sites show 10 reviews, 8 challenges, 2 umpire reviews, 68 ABS challenges, 1 boundary call, 1 run at risk and 78 tracked entries for <code>2026-08-26</code></td>
+          <td class="wrap"><strong>Parity preserved:</strong> only scan time and row order differ between polls</td>
+          <td class="wrap"><a href="https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26&amp;cachebust=62e7077f" target="_blank" rel="noopener">reference feed</a> · <a href="https://kanlerxz87-cyber.github.io/Alert1/reviews.html?date=2026-08-26&amp;verify=62e7077f" target="_blank" rel="noopener">copy feed</a></td>
+          <td class="status-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>S-7</td>
+          <td class="wrap">New task-board claim initially broke the table-row provenance check</td>
+          <td class="wrap">S-3/S-4 rows had no <code>https://</code> source URL; <code>tests/alert1-feedlog-and-provenance-test.mjs</code> rejected the row</td>
+          <td class="wrap"><strong>Fixed:</strong> official source URLs added to those rows; suite now reports 4/4 passing (no site logic changed)</td>
+          <td class="wrap"><a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/tests/alert1-feedlog-and-provenance-test.mjs" target="_blank" rel="noopener">provenance test source</a></td>
+          <td class="status-ok">Fixed &amp; tested</td>
+        </tr>
+        <tr>
+          <td>S-8</td>
+          <td class="wrap">F-1, F-2 and F-3 (MLB <code>reviewDetails</code> schema irregularities) were independently reconfirmed</td>
+          <td class="wrap"><code>823506:56:0:MA</code> → <code>"Pickoff Attempt 1B"</code>; <code>823506:19:5:NH</code> → <code>"Foul"</code>; <code>823180:84:p:NF</code> → two reviewed calls in one <code>reviewDetails</code></td>
+          <td class="wrap"><strong>Still flagged:</strong> official text preserved verbatim; no missing prose or second review ID invented</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/game/823506/playByPlay?fields=allPlays,about,atBatIndex,playEvents,index,details,reviewDetails,isOverturned,inProgress,reviewType,challengeTeamId" target="_blank" rel="noopener">game 823506 playByPlay</a></td>
+          <td class="status-flag">Flagged — upstream schema</td>
+        </tr>
+        <tr>
+          <td>S-9</td>
+          <td class="wrap">Before-review scores and the reference's 68 ABS / 0 scoring-change counts</td>
+          <td class="wrap">No pre-ruling observation is present in the fetched play-by-play payloads; the ABS/scoring-change totals are carried from the earlier official-source audit rather than re-derived here</td>
+          <td class="wrap"><strong>Unverified in this pass:</strong> before-review fields remain blank on the site; ABS totals retained only for visual parity with the reference</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/game/824963/playByPlay" target="_blank" rel="noopener">game 824963 playByPlay</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/audit/reference-parity-2026-11-22.md" target="_blank" rel="noopener">prior official-source audit</a></td>
+          <td class="status-unverified">Unverified — flagged</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>21. Line-by-line upcoming exhibition &amp; feed/live verification (session <code>da098af9</code>, 2026-11-25)</h2>
     <p style="color:var(--muted);font-size:13px">
       Session <code>da098af9</code> reviewed every repository file line by line against
       <a href="https://github.com/snapquast73-boop/LIVPBP/tree/5c02527d3c7a56ea66c698cfabff80a407b6dfd3" target="_blank" rel="noopener">snapquast73-boop/LIVPBP @ 5c02527</a>
@@ -1440,7 +1536,6 @@ node server.mjs                  # optional persistence backend (feed log + SSE)
         </tr>
       </tbody>
     </table>
-
 
   </main>
 
