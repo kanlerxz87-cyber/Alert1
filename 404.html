@@ -6,8 +6,15 @@
   <title>404 — MLB Live PBP</title>
   <!-- GitHub Pages serves this file for unmatched paths at any depth, where
        a plain relative stylesheet/home link would break. Resolve both from
-       the project root (or the server root when run locally). -->
-  <script>document.write('<base href="' + (location.pathname.indexOf('/LIVPBP/') === 0 ? '/LIVPBP/' : '/') + '">');</script>
+       this project's Pages root (/Alert1/) or the server root when run locally.
+       This is the only upstream line changed for the new repository name. -->
+  <script>
+    (function () {
+      var base = document.createElement('base');
+      base.href = location.pathname.indexOf('/Alert1/') === 0 ? '/Alert1/' : '/';
+      document.head.appendChild(base);
+    })();
+  </script>
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
