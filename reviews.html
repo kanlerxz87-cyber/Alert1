@@ -36,12 +36,21 @@
     </div>
     <div id="date-label" class="date-label"></div>
     <div class="feed-controls">
-      <button id="sound-toggle-btn" class="btn btn-ghost" title="Toggle alert sound — a gentle raindrop chime for new challenges/reviews/boundary calls, official-scorer pending rulings and official scoring changes (not ABS), and the same chime whenever an active review could remove a run already on the scoreboard">🔇 Sound Off</button>
-      <button id="notify-toggle-btn" class="btn btn-ghost" title="Toggle desktop notifications for run-at-risk reviews — a popup the moment an active review could take a run off the scoreboard">⚪ Run Alerts Off</button>
-      <button id="refresh-btn" class="btn">Refresh</button>
-      <span class="countdown" id="countdown" title="Seconds until the next poll"></span>
-      <div class="live-pill" title="Polling the MLB StatsAPI">
-        <span id="live-dot" class="live-dot"></span><span>LIVE</span>
+      <div class="control-group" title="One alert tone for the whole page: a ~3 s raindrop shower, off / all tracked events / official scoring only">
+        <button id="sound-toggle-btn" class="btn btn-ghost" aria-pressed="false" title="Alerts Off / Alerts On (every tracked event) / Scoring Alerts only (pending rulings + scoring changes). Each press cycles the three states and remembers your choice per browser; switching them on plays the tone so you can hear it.">🔇 Alerts Off</button>
+        <button id="alert-test-btn" class="btn btn-ghost" title="Play the alert tone now — proves the path works without waiting for a live event. Ignores the cooldown; obeys nothing else.">▶ Test alert</button>
+        <button id="abs-toggle-btn" class="btn btn-ghost" title="ABS pitch challenges are frequent; they stay silent unless you switch them on here">🎯 ABS Alerts Off</button>
+      </div>
+      <div class="control-group">
+        <button id="background-toggle-btn" class="btn btn-ghost" title="Keep polling while this tab is in the background. Off by default: a hidden tab is throttled to a 1 s idle tick to keep the request budget civil. On, alerts keep ringing for every live game even when you are not looking at the page.">🌙 Background Off</button>
+        <button id="notify-toggle-btn" class="btn btn-ghost" title="Desktop notifications for run-at-risk reviews — a popup the moment an active review could take a run off the scoreboard">⚪ Run Alerts Off</button>
+      </div>
+      <div class="control-group">
+        <button id="refresh-btn" class="btn">Refresh</button>
+        <span class="countdown" id="countdown" title="Seconds until the next poll"></span>
+        <div class="live-pill" title="Polling the MLB StatsAPI">
+          <span id="live-dot" class="live-dot"></span><span>LIVE</span>
+        </div>
       </div>
     </div>
   </header>
@@ -49,15 +58,21 @@
   <div id="banner" class="banner"></div>
 
   <main class="reviews-main">
+    <div id="alert-test-note" class="alert-note" role="status" aria-live="polite"></div>
+
     <section id="active-strip" class="active-strip-wrap"></section>
 
     <section id="feed-stats" class="reviews-summary-bar"></section>
+
+    <section id="live-state" class="live-state-wrap" hidden></section>
 
     <nav id="feed-tabs" class="tabs" aria-label="Filter feed"></nav>
 
     <section id="feed-list" class="feed-list" aria-live="polite"></section>
 
     <div id="status-line" class="status-line"></div>
+
+    <section id="scoring-section" class="scoring-section"></section>
   </main>
 
   <footer class="site-footer">
@@ -116,6 +131,9 @@
   <script src="assets/js/ui.js"></script>
   <script src="assets/js/reviews.js"></script>
   <script src="assets/js/feed-log.js"></script>
+  <script src="assets/js/alert-sound.js"></script>
+  <script src="assets/js/game-state.js"></script>
+  <script src="assets/js/scoring-log.js"></script>
   <script src="assets/js/reviews-feed.js"></script>
 </body>
 </html>

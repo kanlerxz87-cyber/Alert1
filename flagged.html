@@ -1583,6 +1583,79 @@ node server.mjs                  # optional persistence backend (feed log + SSE)
         </tr>
       </tbody>
     </table>
+
+    <h2>23. Latency, alert sound, live state capture &amp; the official-scoring book (session <code>3b986e1e</code>, 2026-11-27)</h2>
+    <p>
+      This session added the lowest-latency polling path available on the public API, a ~3 second synthesized
+      rain-drop alert with per-event motifs and a persistent &ldquo;already alerted&rdquo; ledger, second-resolution
+      capture of the official game state before and after every tracked event, and a separate, persistent
+      official-scoring record book. The full record, with the check that proves each claim, is
+      <a href="audit/3b986e1e-verification-2026-11-27.md">audit/3b986e1e-verification-2026-11-27.md</a>, and the
+      API write-up is <a href="docs/live-latency-and-scoring-log.md">docs/live-latency-and-scoring-log.md</a>.
+      The items below are what could <strong>not</strong> be verified, or are deliberately not done.
+    </p>
+    <table class="flagged-table">
+      <thead>
+        <tr>
+          <th style="width:62px">#</th>
+          <th>Item / Irregularity</th>
+          <th>Official Source Payload</th>
+          <th>Disposition in <code>Alert1</code></th>
+          <th>Official Source Link</th>
+          <th style="width:128px">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>3B-F1</td>
+          <td class="wrap">The sandbox this session ran in could not reach <code>statsapi.mlb.com</code> (outbound access limited to <code>github.com</code>, <code>api.github.com</code>, <code>registry.npmjs.org</code>, <code>pypi.org</code>), so no live payload was re-fetched here. Every value used by the new code came from the official payloads already captured verbatim in <code>tests/fixtures/</code>.</td>
+          <td class="wrap"><code>GET /api/v1.1/game/824638/feed/live</code> and <code>GET /api/v1/game/824474/playByPlay</code> captures (2026-11-20) stored in <code>tests/fixtures/feed-824638-review.json</code> with their <code>_provenance</code> block</td>
+          <td class="wrap"><strong>Disclosed.</strong> No value was invented; the new suites assert against those official captures. Re-run <code>node tests/jsdom-render-test.mjs --live</code> from a networked machine to re-verify against the live API.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1.1/game/824638/feed/live" target="_blank" rel="noopener">824638 feed/live</a> · <a href="https://statsapi.mlb.com/api/v1/game/823180/playByPlay" target="_blank" rel="noopener">823180 playByPlay</a></td>
+          <td class="status-flag">Flagged — disclosed</td>
+        </tr>
+        <tr>
+          <td>3B-F2</td>
+          <td class="wrap">End-to-end latency has a floor this site cannot move: MLB&rsquo;s own publish delay between an on-field event and its appearance in the StatsAPI is not documented and varies. The site can only minimise the delay <em>after</em> publication (poll cadence, cache-busting, per-game ingest).</td>
+          <td class="wrap">The StatsAPI is pull-only; there is no published push/webhook endpoint and no published latency figure. Gameday additionally uses an undocumented WebSocket channel (<code>wss://ws.statsapi.mlb.com/api/v1/game/push/subscribe/gameday/&lt;gamePk&gt;</code>) that this project deliberately does not depend on.</td>
+          <td class="wrap"><strong>Documented, no fixed-latency claim made.</strong> The page reports the measured round trip (median / P95 / per game) instead of promising a number, and <code>docs/live-latency-and-scoring-log.md</code> §1 and §8 state the limit explicitly.</td>
+          <td class="wrap"><a href="https://github.com/toddrob99/MLB-StatsAPI/wiki/Endpoints" target="_blank" rel="noopener">StatsAPI endpoint reference</a> · <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2026-08-26" target="_blank" rel="noopener">schedule</a></td>
+          <td class="status-flag">Flagged — inherent limit</td>
+        </tr>
+        <tr>
+          <td>3B-F3</td>
+          <td class="wrap">The public incremental endpoint <code>/feed/live/diffPatch?startTimecode=&amp;endTimecode=</code> returns only the delta and is the cheapest way to stay current, but it is not wired in: its response is not always a patch (it can return a whole feed and signal a full refresh), patch paths address fields typed clients never decode, and it needs a timecode bootstrap from the full feed.</td>
+          <td class="wrap"><code>GET https://statsapi.mlb.com/api/v1.1/game/&lt;gamePk&gt;/feed/live/diffPatch</code> — documented parameters <code>startTimecode</code> / <code>endTimecode</code></td>
+          <td class="wrap"><strong>Documented, seam provided.</strong> The full feed&rsquo;s <code>metaData.timeStamp</code> is already captured on every 10 s resync, so the timecode state a <code>diffPatch</code> client needs is available; the switch would go behind <code>MLB.gameFeedState()</code> in <code>assets/js/api.js</code>.</td>
+          <td class="wrap"><a href="https://github.com/toddrob99/MLB-StatsAPI/wiki/Endpoints" target="_blank" rel="noopener">Endpoints wiki (game_diff)</a> · <a href="https://statsapi.mlb.com/api/v1.1/game/824638/feed/live" target="_blank" rel="noopener">824638 feed/live</a></td>
+          <td class="status-flag">Flagged — not wired</td>
+        </tr>
+        <tr>
+          <td>3B-F4</td>
+          <td class="wrap">An event that has already resolved before the page opens has no observed <em>before</em> game state. Printing one would mean inventing it.</td>
+          <td class="wrap">The payload stores one current state per response; the pre-ruling score and count are not published as separate fields (<code>allPlays[n].about</code> carries only the current <code>awayScore</code>/<code>homeScore</code>)</td>
+          <td class="wrap"><strong>Verified blank (never inferred):</strong> the before/after block collapses to a single &ldquo;State when observed&rdquo; block with the sentence &ldquo;there is no earlier poll to compare, so nothing is inferred about the state before it&rdquo;, and the pre-existing &ldquo;Before-review score was not observed&rdquo; irregularity still fires.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/game/823180/playByPlay" target="_blank" rel="noopener">823180 playByPlay</a></td>
+          <td class="status-ok">Verified blank</td>
+        </tr>
+        <tr>
+          <td>3B-F5</td>
+          <td class="wrap">Alerts are per browser tab: closing the page stops the audio. The shared <code>server.mjs</code> store keeps the <em>records</em> (feed log and official-scoring book) across browsers and sessions, not the sound.</td>
+          <td class="wrap">Web Audio is a client-side API with no server-side equivalent here; <code>server.mjs</code> is a static-file + JSON store with no push channel to a closed tab</td>
+          <td class="wrap"><strong>Documented.</strong> The <strong>&#127769; Background</strong> switch keeps polling and alerting while the tab is hidden (it is throttled to a 1 s idle tick otherwise), which is the practical mitigation; the limit is stated in the README and in the write-up §8.</td>
+          <td class="wrap"><a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/docs/live-latency-and-scoring-log.md" target="_blank" rel="noopener">docs/live-latency-and-scoring-log.md</a></td>
+          <td class="status-flag">Flagged — documented</td>
+        </tr>
+        <tr>
+          <td>3B-F6</td>
+          <td class="wrap">Session <code>3b986e1e</code> branch name is fixed by the Arena sandbox to <code>arena/3b986e1e-alert1</code> rather than <code>session-3b986e1e/&lt;task&gt;</code>.</td>
+          <td class="wrap">Platform branch policy requires committing, pushing, and opening the PR exclusively from <code>arena/3b986e1e-alert1</code></td>
+          <td class="wrap"><strong>Disclosed:</strong> task claim committed first (<code>90ebfa7</code>) on <code>arena/3b986e1e-alert1</code> before any code edit.</td>
+          <td class="wrap"><a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/COORDINATION.md" target="_blank" rel="noopener">COORDINATION.md</a></td>
+          <td class="status-flag">Flagged — inherited</td>
+        </tr>
+      </tbody>
+    </table>
   </main>
 
   <footer class="site-footer">

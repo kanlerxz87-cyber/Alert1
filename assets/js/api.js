@@ -73,11 +73,23 @@
    *   opts.retries  extra attempts after a failed one (default 1)
    *   opts.signal   external AbortSignal (poll loops use it to cancel)
    *   opts.keepQuiet  bypass the 429 quiet window (used by the quiet probe only)
+   *   opts.timeout  per-request timeout in ms (default REQUEST_TIMEOUT_MS)
+   *   opts.bust     append a unique query parameter, defeating any intermediate
+   *                 cache that ignores `Cache-Control: no-store` (poll paths
+   *                 that must never see a replayed response)
    */
   function getJSON(url, opts) {
     opts = opts || {};
     var ttl = opts.ttl || 0;
     var retries = typeof opts.retries === 'number' ? opts.retries : 1;
+    /* Every poll is already sent with `cache: 'no-store'`, but a CDN edge or a
+     * mis-configured proxy can still answer a GET from its own cache.  Asking
+     * for a unique URL makes that impossible — it costs one query parameter and
+     * removes a whole class of "my feed was 30 seconds stale" failures. */
+    if (opts.bust) {
+      url += (url.indexOf('?') === -1 ? '?' : '&') + '_=' + now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+    var timeoutMs = opts.timeout || REQUEST_TIMEOUT_MS;
 
     if (ttl && cache[url] && now() - cache[url].at < cache[url].ttl) {
       state.cacheHits += 1;
@@ -98,7 +110,7 @@
       state.requests += 1;
 
       var controller = new AbortController();
-      var timer = setTimeout(function () { controller.abort(); }, REQUEST_TIMEOUT_MS);
+      var timer = setTimeout(function () { controller.abort(); }, timeoutMs);
       var external = opts.signal;
       if (external) {
         if (external.aborted) controller.abort();
@@ -144,7 +156,7 @@
           return sleep(300 * attempt).then(once);
         }
         if (err.name === 'AbortError') {
-          throw ApiError('Request timed out after ' + REQUEST_TIMEOUT_MS + 'ms: ' + url, 0, url);
+          throw ApiError('Request timed out after ' + timeoutMs + 'ms: ' + url, 0, url);
         }
         throw err;
       });
@@ -173,7 +185,13 @@
     return getJSON(scheduleUrl(date, {
       hydrate: opts.hydrate === undefined ? SCHEDULE_HYDRATE : opts.hydrate,
       fields: opts.fields || '',
-    }), { ttl: opts.ttl || 0, signal: opts.signal, retries: opts.retries });
+    }), {
+      ttl: opts.ttl || 0,
+      signal: opts.signal,
+      retries: opts.retries,
+      bust: opts.bust,
+      timeout: opts.timeout,
+    });
   }
 
   /* Date-range game counts — used only to point at the most recent date that
@@ -197,6 +215,8 @@
       ttl: opts.ttl === undefined ? 0 : opts.ttl,
       signal: opts.signal,
       retries: 0,
+      bust: opts.bust,
+      timeout: opts.timeout,
     });
   }
 
@@ -205,12 +225,12 @@
     opts = opts || {};
     var url = API_ROOT + '/v1.1/game/' + gamePk + '/feed/live';
     if (opts.fields) url += '?fields=' + encodeURIComponent(opts.fields);
-    return getJSON(url, { signal: opts.signal, retries: opts.retries })
+    return getJSON(url, { signal: opts.signal, retries: opts.retries, bust: opts.bust, timeout: opts.timeout })
       .catch(function (err) {
         if (err && err.status === 404) {
           var v1Url = API_ROOT + '/v1/game/' + gamePk + '/feed/live';
           if (opts.fields) v1Url += '?fields=' + encodeURIComponent(opts.fields);
-          return getJSON(v1Url, { signal: opts.signal }).catch(function (err2) {
+          return getJSON(v1Url, { signal: opts.signal, bust: opts.bust, timeout: opts.timeout }).catch(function (err2) {
             if (err2 && err2.status === 404 && !opts.fields) {
               return Promise.all([
                 playByPlay(gamePk, { signal: opts.signal }),
@@ -253,7 +273,50 @@
     opts = opts || {};
     var fields = 'gameData,status,abstractGameState,codedGameState,detailedState,statusCode,reason,startTimeTBD,abstractGameCode';
     return getJSON(API_ROOT + '/v1.1/game/' + gamePk + '/feed/live?fields=' + encodeURIComponent(fields), {
-      signal: opts.signal, retries: 0,
+      signal: opts.signal, retries: 0, bust: opts.bust, timeout: opts.timeout,
+    });
+  }
+
+  /* `fields` projection for the Replay Feed's full-feed resync.  It must carry
+   * everything the lean play-by-play scan does PLUS `metaData` (MLB's own
+   * `timeStamp` / `wait`, the official provenance of a captured state) and
+   * `currentPlay` (the live at-bat card: batter, pitcher, on-deck, in-the-hole).
+   * Both live under `gameData.*`, so the projection has to ask for them by name. */
+  var FEED_STATE_FIELDS = 'gameData,game,teams,away,home,team,id,name,abbreviation,score,status,' +
+    'abstractGameState,detailedState,statusCode,reason,datetime,dateTime,review,absChallenges,hasChallenges,' +
+    'used,remaining,usedSuccessful,usedFailed,metaData,timeStamp,wait,gameEvents,logicalEvents,' +
+    'liveData,plays,allPlays,currentPlay,about,atBatIndex,isComplete,hasReview,isScoringPlay,halfInning,' +
+    'inning,isTopInning,result,eventType,description,isOut,rbi,awayScore,homeScore,count,balls,strikes,outs,' +
+    'matchup,batter,pitcher,onDeck,inHole,fullName,playEvents,details,call,reviewDetails,isOverturned,' +
+    'inProgress,reviewType,challengeTeamId,runners,isScoringEvent,playIndex,movement,index,isPitch,' +
+    'pitchNumber,type,startTime,endTime,linescore,currentInning,currentInningOrdinal,inningHalf,inningState,' +
+    'scheduledInnings,offense,first,second,third,hits,errors,leftOnBase,isWinner';
+
+  /**
+   * gameFeedState(gamePk, opts) — the Replay Feed's *authoritative* read.
+   *
+   * Same endpoint as gameFeed() (v1.1 first, v1 fallback), but:
+   *   - projected with FEED_STATE_FIELDS so it carries metaData + currentPlay,
+   *   - never cached (the whole point is the freshest possible bytes),
+   *   - Accept-Encoding gzip is the browser default and the responses compress
+   *     to a fraction of their size, which is what makes a sub-second full-feed
+   *     resync affordable at all.
+   * Used as the safety net behind the lean 250 ms play-by-play scan: whatever a
+   * projection missed is recovered here within RESYNC_MS, and this is where the
+   * official `metaData.timeStamp` for a captured game state comes from.
+   */
+  function gameFeedState(gamePk, opts) {
+    opts = opts || {};
+    var qs = 'fields=' + encodeURIComponent(FEED_STATE_FIELDS) + '&_=' + now().toString(36);
+    return getJSON(API_ROOT + '/v1.1/game/' + gamePk + '/feed/live?' + qs, {
+      signal: opts.signal, retries: 0, bust: true, timeout: opts.timeout,
+    }).catch(function (err) {
+      if (err && err.status === 404) {
+        return getJSON(API_ROOT + '/v1/game/' + gamePk + '/feed/live?' + qs, {
+          signal: opts.signal, retries: 0, bust: true, timeout: opts.timeout,
+        });
+      }
+      throw err;
     });
   }
 
@@ -261,7 +324,9 @@
     opts = opts || {};
     var url = API_ROOT + '/v1/game/' + gamePk + '/playByPlay';
     if (opts.fields) url += '?fields=' + encodeURIComponent(opts.fields);
-    return getJSON(url, { signal: opts.signal, retries: opts.retries });
+    return getJSON(url, {
+      signal: opts.signal, retries: opts.retries, bust: opts.bust, timeout: opts.timeout,
+    });
   }
 
   function boxscore(gamePk, opts) {
@@ -394,12 +459,15 @@
     SPORT_ID: SPORT_ID,
     API_ROOT: API_ROOT,
     STATUS_FIELDS: STATUS_FIELDS,
+    REQUEST_TIMEOUT_MS: REQUEST_TIMEOUT_MS,
     SCHEDULE_HYDRATE: SCHEDULE_HYDRATE,
     getJSON: getJSON,
     schedule: schedule,
     scheduleRange: scheduleRange,
     slateStatus: slateStatus,
     gameFeed: gameFeed,
+    gameFeedState: gameFeedState,
+    FEED_STATE_FIELDS: FEED_STATE_FIELDS,
     gameStatusLean: gameStatusLean,
     playByPlay: playByPlay,
     boxscore: boxscore,
