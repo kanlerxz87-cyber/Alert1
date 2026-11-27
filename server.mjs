@@ -65,6 +65,97 @@ function getLogFilePath(dateStr) {
   return path.join(DATA_DIR, `feed-log-${dateStr}.json`);
 }
 
+/* ---------------------------------------------------- official scoring log
+ * The official-scoring record book (assets/js/scoring-log.js) is stored in its
+ * own files under data/, with its own merge, so nothing that happens to the
+ * replay-feed log — or to the alert system on top of it — can disturb it.
+ */
+function getScoringFilePath(dateStr) {
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return null;
+  return path.join(DATA_DIR, `scoring-log-${dateStr}.json`);
+}
+
+function readScoringFromDisk(dateStr) {
+  const filePath = getScoringFilePath(dateStr);
+  if (!filePath || !fs.existsSync(filePath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (err) {
+    console.warn(`[server] failed to read the official scoring log for ${dateStr}:`, err);
+    return null;
+  }
+}
+
+/** Merge official-scoring records idempotently, keeping every before-side. */
+function mergeScoringPayloads(existing, incoming, dateStr) {
+  const now = Date.now();
+  const base = (existing && existing.v === 1 && Array.isArray(existing.records)) ? existing : { records: [] };
+  const add = (incoming && incoming.v === 1 && Array.isArray(incoming.records)) ? incoming : { records: [] };
+  const map = new Map();
+
+  function mergeRecord(a, b) {
+    if (!a) return b;
+    if (!b) return a;
+    const out = { ...a };
+    // The before-side of a change is never overwritten by a later poll.
+    out.before = a.before || b.before || null;
+    out.stateBefore = a.stateBefore || b.stateBefore || null;
+    out.after = b.after || a.after || null;
+    out.stateAfter = b.stateAfter || a.stateAfter || null;
+    out.resolvedAt = b.resolvedAt || a.resolvedAt || null;
+    out.firstObservedAt = Math.min(a.firstObservedAt || Infinity, b.firstObservedAt || Infinity) || null;
+    out.lastObservedAt = Math.max(a.lastObservedAt || 0, b.lastObservedAt || 0) || null;
+    out.observedLive = a.observedLive === true || b.observedLive === true;
+    out.source = a.source || b.source || null;
+    out.matchup = a.matchup || b.matchup || null;
+    out.inning = a.inning || b.inning || null;
+    out.batter = a.batter || b.batter || null;
+    out.pitcher = a.pitcher || b.pitcher || null;
+    out.eventType = b.eventType || a.eventType || null;
+    out.official = b.official || a.official || null;
+    out.notes = [...new Set([...(a.notes || []), ...(b.notes || [])])];
+    const seen = new Set();
+    out.changes = [...(a.changes || []), ...(b.changes || [])].filter((c) => {
+      if (!c) return false;
+      const key = `${c.field}|${c.from}|${c.to}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    out.revisions = [...(a.revisions || []), ...(b.revisions || [])]
+      .filter((r) => r && r.at)
+      .sort((x, y) => x.at - y.at)
+      .slice(-50);
+    return out;
+  }
+
+  for (const rec of [...(base.records || []), ...(add.records || [])]) {
+    if (!rec || !rec.id) continue;
+    map.set(String(rec.id), mergeRecord(map.get(String(rec.id)), rec));
+  }
+
+  const records = [...map.values()]
+    .sort((x, y) => (y.lastObservedAt || 0) - (x.lastObservedAt || 0))
+    .slice(0, 800);
+
+  return { v: 1, date: dateStr, savedAt: now, records };
+}
+
+function writeScoringToDisk(dateStr, payload) {
+  const filePath = getScoringFilePath(dateStr);
+  if (!filePath) return false;
+  try {
+    const merged = mergeScoringPayloads(readScoringFromDisk(dateStr), payload, dateStr);
+    const tempPath = `${filePath}.tmp.${Date.now()}`;
+    fs.writeFileSync(tempPath, JSON.stringify(merged, null, 2), 'utf8');
+    fs.renameSync(tempPath, filePath);
+    return merged;
+  } catch (err) {
+    console.error(`[server] failed to write the official scoring log for ${dateStr}:`, err);
+    return false;
+  }
+}
+
 function readLogFromDisk(dateStr) {
   const filePath = getLogFilePath(dateStr);
   if (!filePath || !fs.existsSync(filePath)) return null;
@@ -320,6 +411,49 @@ const server = http.createServer((req, res) => {
     // idempotently, exactly like its ordinary GET).
     const current = readLogFromDisk(dateStr);
     if (current) sseWrite(res, `event: feed-log\ndata: ${JSON.stringify(current)}\n\n`);
+    return;
+  }
+
+  // GET /api/scoring-log?date=YYYY-MM-DD — the separate official-scoring book.
+  if (pathname === '/api/scoring-log' && req.method === 'GET') {
+    const dateStr = reqUrl.searchParams.get('date');
+    if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      sendError(res, 400, 'date query parameter in YYYY-MM-DD format is required');
+      return;
+    }
+    sendJSON(res, 200, readScoringFromDisk(dateStr) || { v: 1, date: dateStr, savedAt: Date.now(), records: [] });
+    return;
+  }
+
+  // POST /api/scoring-log — merge one browser's records into the shared book.
+  if (pathname === '/api/scoring-log' && req.method === 'POST') {
+    let body = '';
+    req.setEncoding('utf8');
+    req.on('data', (chunk) => {
+      body += chunk;
+      if (body.length > 20 * 1024 * 1024) {
+        res.writeHead(413, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Payload too large' }));
+        req.destroy();
+      }
+    });
+    req.on('end', () => {
+      try {
+        const payload = JSON.parse(body);
+        if (!payload || payload.v !== 1 || !payload.date || !/^\d{4}-\d{2}-\d{2}$/.test(payload.date)) {
+          sendError(res, 400, 'Invalid payload: must be object with v: 1 and valid date (YYYY-MM-DD)');
+          return;
+        }
+        const saved = writeScoringToDisk(payload.date, payload);
+        if (!saved) {
+          sendError(res, 500, 'Failed to save the official scoring log to disk');
+          return;
+        }
+        sendJSON(res, 200, { ok: true, date: payload.date, savedAt: saved.savedAt, recordsCount: saved.records.length });
+      } catch (err) {
+        sendError(res, 400, `JSON parse error: ${err.message}`);
+      }
+    });
     return;
   }
 

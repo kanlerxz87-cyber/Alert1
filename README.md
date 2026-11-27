@@ -85,18 +85,50 @@ mlb.com uses, re-implemented from scratch in vanilla HTML/CSS/JS.
     Challenges** stat, and in the challenges-remaining counters),
     **Challenges**, **Reviews**, **Boundary Calls**, **Under Review**,
     **⚠️ Runs at Risk** —,
-    summary stats for the whole day, and an optional **sound alert** — a gentle
-    synthesized raindrop chime (three soft drops blooming into a warm two-note
-    chime, ~1.2s, pure sine tones with a light echo) when a new challenge, review,
-    or boundary call lands. It is off by default, remembers your choice per
-    browser, and never fires for routine ABS pitch challenges (the run-at-risk
-    case below is the one exception, and it uses this exact same chime).
+    summary stats for the whole day, and an optional **alert sound** — a
+    **~3 second rain-drop shower** (`assets/js/alert-sound.js`): soft sine
+    droplets with a long tail, a band-limited noise bed that reads as rain on a
+    window, a short shared echo and a warm chime underneath. It is synthesized
+    with WebAudio, so there is no audio file to download and nothing on the
+    alert path waits for the network. Each tracked event gets its own *motif*
+    (same texture, different droplet pattern and chime interval) so the ear can
+    tell a review from an official-scorer pending ruling, an official scoring
+    change, or a run at risk. One alert at a time (900 ms cooldown, 3 s fade), so
+    six games changing at once still sound like one pleasant shower.
+    **Controls:** **Alerts Off / Alerts On / Scoring Alerts only** (one button,
+    three states, remembered per browser) — switching them on plays the tone, so
+    the toggle itself proves the path works; **▶ Test alert** plays the full demo
+    shower, ignores the cooldown, and says *why* nothing played if the browser
+    blocked audio; **🎯 ABS Alerts** keeps the frequent ABS pitch challenges
+    silent unless you ask for them; **🌙 Background** keeps polling and alerting
+    while the tab is hidden; **Clear alert ledger** re-arms alerts for events
+    already on the page. Every alert is claimed once in a persistent ledger keyed
+    by event id and date (`mlbp.alerts.<date>`), so a refresh or a second tab
+    never replays a sound for something you already heard.
+  - **Live game state, captured as it happens** — every live game gets a row in
+    the **Live game state** board showing the official score, inning, outs,
+    count, batter, pitcher, pitch count, the local clock **to the second**, and
+    MLB's own `metaData.timeStamp` for that state. Every tracked event stores the
+    state captured **before** it and **after** it and renders the pair on the row,
+    together with the exact official wording on both sides (see
+    [`docs/live-latency-and-scoring-log.md`](docs/live-latency-and-scoring-log.md)).
+  - **Official scoring log — its own section, its own store** — pending rulings
+    (`os_ruling_pending_primary` / `os_ruling_pending_prior`) and official
+    scoring changes are also written to a **separate record book**
+    (`assets/js/scoring-log.js`, `mlbp.scoringlog.<date>`, plus
+    `GET/POST /api/scoring-log` and `data/scoring-log-<date>.json` when
+    `server.mjs` is running) and rendered in their own **Official scoring log**
+    section with its own views and a text export. The book is written *before*
+    anything is alerted and shares no key, no storage and no code path with the
+    alert system, so turning alerts off, clearing the alert ledger, or changing
+    the alert tone can never lose or hide a scoring record. Records survive a
+    refresh by construction.
   - **⚠️ Runs at Risk — "could this review take a run OFF the board?"** The feed
     tracks, per review, whether the call on the field credited runs to the very
     event now under review, so an overturn could remove them from the score. When
-    it can, you get, immediately: the **same gentle raindrop chime** used for any
+    it can, you get, immediately: the **same raindrop shower** used for any
     new review (one alert sound for the whole page — it is literally the same
-    audio graph, and shares its 2.5s cooldown), an
+    audio graph, one motif more urgent, and the same 900 ms cooldown), an
     optional **desktop notification**, a persistent **red banner** at the top of
     the page listing every affected game with the call-stands score and — only
     when the payload actually supports it — the score if the runs come off,
@@ -297,11 +329,15 @@ for archived games the request is scoped to the feed's game season.
 │       ├── reviews-feed.js    # All-games Replay Feed logic (diff helpers + page)
 │       ├── scoreboard.js      # Scoreboard page logic
 │       ├── feed-log.js        # Per-date feed log: localStorage + optional server.mjs sync/SSE
+│       ├── alert-sound.js     # ~3 s synthesized raindrop alert + the "already alerted" ledger
+│       ├── game-state.js      # Official live game state capture, before/after diff, second-stamps
+│       ├── scoring-log.js     # Separate official-scoring record book (own store, own merge)
 │       ├── props.js           # Two-sided hit model, stat cache, Props & Matchup tab
 │       └── game.js            # Game page logic (live "at bat" module, linescore, box, PBP)
 ├── server.mjs                 # Optional zero-dependency persistence server (static + feed log)
 ├── tests/                     # Zero-network checks: link check, jsdom render test, fixtures
 ├── docs/verification-report.md# Field-by-field verification with official source links
+├── docs/live-latency-and-scoring-log.md  # How the feed gets its speed + the scoring book
 └── COORDINATION.md            # Multi-session task board, claims, merge + deployment record
 ```
 
@@ -354,6 +390,15 @@ changes) is persistent across the website:
     with full initial-call-to-final-ruling breakdown, and updates the tab badge.
   - `index.html`: scoreboard cards display the `✏️ N Scoring Change(s)` indicator.
   (the original `docs/scoring-changes.md` was not uploaded — see F-003 on [`flagged.html`](flagged.html)).
+- **Two independent stores by design.** The replay-feed log above powers the
+  rows and the alerts; the **official-scoring book**
+  (`mlbp.scoringlog.<date>` in the browser, `data/scoring-log-<date>.json` +
+  `GET/POST /api/scoring-log` on `server.mjs`) is written separately, first, and
+  is rendered in its own **Official scoring log** section with its own views,
+  counts and text export. They share no key and no code path, so an alert change
+  — or an alert failure — cannot lose or hide a scoring record. See
+  [`docs/live-latency-and-scoring-log.md`](docs/live-latency-and-scoring-log.md)
+  §6.
 
 To *see and hear* the ⚠️ Runs at Risk surfaces without waiting for a live review,
 run the offline, fixture-driven render test — it stubs the API with the exact same
@@ -404,6 +449,17 @@ GitHub Actions**.
   in `assets/js/scoreboard.js` and `assets/js/reviews-feed.js`;
   `FETCH_CONCURRENCY` in `assets/js/reviews-feed.js` (how many games the all-games
   feed fetches in parallel per scan).
+- **Replay Feed latency:** `SCAN_MS` (250 ms lean play-by-play per live game),
+  `REVIEW_PROBE_MS` (200 ms while a review is open) with
+  `REVIEW_PROBE_MAX_GAMES` (how many games may use the fast probe at once),
+  `SCHEDULE_TTL_MS` (how long one schedule response is reused),
+  `RESYNC_MS` (projected `feed/live` resync per live game) and
+  `RENDER_COALESCE_MS` (one DOM write per frame) — all in
+  `assets/js/reviews-feed.js`.
+- **Alert sound:** the motifs (`MOTIFS`), the cooldown (`COOLDOWN_MS`) and the
+  ledger keys in `assets/js/alert-sound.js`. The tone is synthesized, so there is
+  no audio file to swap; change a motif's `drops` / `chime` to change how it
+  sounds.
 - **Team colors:** `TEAM_COLORS` in `assets/js/ui.js`.
 
 ## Notes & etiquette

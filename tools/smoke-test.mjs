@@ -1115,12 +1115,15 @@ console.log('\n[13] reference-parity fixes (session 6e2a58d9: G-2…G-5, G-9)');
   });
 
   async function rescanAnd(fn) {
+    /* Capture a primitive: the page updates `state.lastChimeAt` in place, and a
+     * destructured reference would read it at call time, not at assert time. */
     st.lastChimeAt = 0;
     st.soundOn = true;
     w.ReplayFeed.scan();
     await new Promise((r) => setTimeout(r, 500));
     while (st.scanning) await new Promise((r) => setTimeout(r, 50));
-    fn(st.lastChimeAt);
+    await new Promise((r) => setTimeout(r, 60));
+    fn(Number(st.lastChimeAt) || 0);
     st.soundOn = false;
   }
 
@@ -1185,7 +1188,7 @@ console.log('\n[13] reference-parity fixes (session 6e2a58d9: G-2…G-5, G-9)');
     while (mst.scanning) await new Promise((r) => setTimeout(r, 50));
     assert(mst.entries.some((e) => e.kind === 'scoring_change'),
       'reclassification between polls must create a scoring-change row');
-    assert(mst.lastChimeAt > 0, 'new official scoring change must chime');
+    assert(Number(mst.lastChimeAt) > 0, 'new official scoring change must chime');
     mutDom.window.ReplayFeed.setFilter('all');
     const html = text(mutDom.window.document.getElementById('feed-list'));
     assert(html.includes('Official Scoring Change'), 'scoring change must render in All');
