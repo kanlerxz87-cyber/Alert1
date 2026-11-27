@@ -4,9 +4,20 @@ Repo: `kanlerxz87-cyber/Alert1` · Site: https://kanlerxz87-cyber.github.io/Aler
 Reference: https://snapquast73-boop.github.io/LIVPBP/reviews.html?date=2026-08-26
 Copied source: https://github.com/snapquast73-boop/LIVPBP @ `5c02527d3c7a56ea66c698cfabff80a407b6dfd3`
 
-Updated 2026-11-25 by session **`da098af9`** (branch `arena/da098af9-alert1`, recording PR #26 merge @ `2c1fa16` & live GitHub Pages deployment) preserving 100% of all prior and parallel-session records (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`, `fae80285`, `e9936287`, `f0bea661`, `0eea8c12`, `36284656`, `62e7077f`, `9b0e4ac1`, `15b89941`, `5e124cc4`, `0d7dbc14`).
+Updated 2026-11-27 by session **`3b986e1e`** (branch `arena/3b986e1e-alert1`, latency / alert-sound / live-state-capture / scoring-log work) preserving 100% of all prior and parallel-session records (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`, `fae80285`, `e9936287`, `f0bea661`, `0eea8c12`, `36284656`, `62e7077f`, `9b0e4ac1`, `15b89941`, `5e124cc4`, `0d7dbc14`, `da098af9`).
 
-## Active task board — session `da098af9` (2026-11-25)
+## Active task board — session `3b986e1e` (2026-11-27)
+
+| ID | Task | Status | Owner | File scope | Notes / Official Source |
+|---|---|---|---|---|---|
+| L-1 | Lowest-latency in-game play-by-play feed: keep the 250 ms live scan, add a 200 ms optional in-review probe, a 10 s gzip-compressed full-feed safety resync, `cache: no-store` on every poll, hidden-tab throttling with an optional background mode, and a per-game observed latency badge (edge → first observation) | `in-progress` | `3b986e1e` | `assets/js/reviews-feed.js`, `assets/js/api.js`, `reviews.html` | Play-by-play endpoint used by the feed: https://statsapi.mlb.com/api/v1/game/823180/playByPlay |
+| L-2 | Pleasant all-day alert sound: 3 s synthesized raindrop shower, one shared audio graph, a **Test alert** button, on/off toggle, distinct soft motifs per tracked event (review / pending ruling / scoring change / runs at risk), and a persisted "alerted events" ledger so a reload never replays a sound | `in-progress` | `3b986e1e` | `assets/js/alert-sound.js`, `assets/js/reviews-feed.js`, `reviews.html` | Review wording registry: https://statsapi.mlb.com/api/v1/gameStatus |
+| L-3 | Live official game-state capture with before/after: score, outs, count, inning, batter, pitcher, pitch count, scoring-play flag and challenge counters, each stored with its observation time to the second (`ts`) and MLB's own `metaData.timeStamp`; every challenge / manager challenge / review / umpire review / pending ruling / scoring change stores the captured **before** and **after** state on the row | `in-progress` | `3b986e1e` | `assets/js/game-state.js`, `assets/js/reviews-feed.js` | `feed/live` carries `metaData.timeStamp`: https://statsapi.mlb.com/api/v1.1/game/824638/feed/live |
+| L-4 | Official-scoring section kept separate from the alert system: its own dual-view lock namespace (`alerts` / `scoring`) and its own record store, its own ✏️ tab plus a persistent **Official Scoring Log** section that survives refreshes | `in-progress` | `3b986e1e` | `assets/js/scoring-log.js`, `assets/js/reviews-feed.js`, `reviews.html` | Pending-ruling event types: https://statsapi.mlb.com/api/v1/eventTypes |
+| L-5 | Suggestions + docs for doing this through the MLB API: `docs/live-latency-and-scoring-log.md` (pull vs. push, `diffPatch`, `metaData.timeStamp` provenance, record schema, limits) and audit record | `in-progress` | `3b986e1e` | `docs/live-latency-and-scoring-log.md`, `audit/3b986e1e-verification-2026-11-27.md` | Diff endpoint reference: https://github.com/toddrob99/MLB-StatsAPI/wiki/Endpoints |
+| L-6 | Regression suites for the new modules (latency config, alert ledger/test button, before/after capture, persistent scoring log) + full local suite | `in-progress` | `3b986e1e` | `tests/live-capture-alerts-test.mjs`, `.github/workflows/site-check.yml` | Fixture provenance: https://statsapi.mlb.com/api/v1.1/game/824638/feed/live |
+
+## Preserved board — session `da098af9` (2026-11-25)
 
 | ID | Task | Status | Owner | File scope | Notes / Official Source |
 |---|---|---|---|---|---|
