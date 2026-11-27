@@ -1173,9 +1173,18 @@ console.log('\n[13] reference-parity fixes (session 6e2a58d9: G-2…G-5, G-9)');
     const mutDom = await boot('reviews.html', { fetchImpl: mutFetch, beforeParse(x) { x.localStorage.clear(); } });
     await new Promise((r) => setTimeout(r, 700));
     const mst = mutDom.window.ReplayFeed.state;
-    /* Reclassify a completed play between polls (error→single style diff). */
-    pbp.allPlays[0].result.eventType = 'field_error';
-    pbp.allPlays[0].result.description = 'Reached on error.';
+    /* Reclassify a completed play between polls (error→single style diff).
+     * FEED_823109.liveData.plays.allPlays IS the PBP_823109.allPlays array, so
+     * replacing an element of it is what makes the reclassification visible on
+     * both official endpoints the page reads (the delta path keeps its own copy
+     * of the feed, so the source payload is the only thing that can change). */
+    PBP_823109.allPlays[0] = Object.assign({}, PBP_823109.allPlays[0], {
+      result: Object.assign({}, PBP_823109.allPlays[0].result, {
+        eventType: 'field_error',
+        description: 'Reached on error.',
+      }),
+    });
+    pbp = JSON.parse(JSON.stringify(PBP_823109));
     await new Promise((resolve) => {
       mst.lastChimeAt = 0;
       mst.soundOn = true;

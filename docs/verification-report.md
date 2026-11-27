@@ -282,3 +282,82 @@ live: reviews.html?date=2026-08-26           -> identical to reference (10/8/2/6
 live: ?date=2027-03-25 / ?date=2027-02-19    -> 14 / 17 games, TBD on startTimeTBD games only
 live: ?date=2026-11-25 (offseason)           -> empty slate + 2026-10-28 / 2027-02-19 jump buttons
 ```
+
+---
+
+## 11. Fastest-feed deltas, live state capture, alert sound & separate scoring ledger — session `ccfa803c` (2026-11-27)
+
+Full write-up: [`docs/live-state.md`](live-state.md). This section records only what was run and
+what the results were.
+
+### 11.1 Official endpoints re-verified live on 2026-11-27
+
+| # | Endpoint | Answer | Used for |
+|---|---|---|---|
+| V-1 | <https://statsapi.mlb.com/api/v1.1/game/745111/feed/live/diffPatch?startTimecode=20240403_011327&endTimecode=20240403_011340> | an **array** of `{diff:[…]}` RFC 6902 patches (first op rewrites `/metaData/timeStamp`) | the delta transport |
+| V-2 | <https://statsapi.mlb.com/api/v1.1/game/745111/feed/live/diffPatch?startTimecode=99999999_999999> | a **full feed object** (`metaData.logicalEvents: ["fullUpdate"]`) | proves the "full feed instead of patch" answer is normal, so it is treated as a seed |
+| V-3 | <https://statsapi.mlb.com/api/v1.1/game/745111/feed/live/timestamps> | 553 `YYYYMMDD_HHMMSS` timecodes for one game, several per pitch | update-cadence evidence and the change probe |
+| V-4 | <https://statsapi.mlb.com/api/v1/eventTypes> | includes `os_ruling_pending_primary` / `os_ruling_pending_prior` ("Official Scorer Ruling Pending") | the pending-ruling vocabulary; a completed PA with `eventType: ""`/`at_bat_start` covers the rest |
+
+No MLB game was in progress on 2026-11-27 (offseason), so the **push socket frame format could not
+be observed live**; it is read defensively and flagged in [`flagged.html` §23](../flagged.html).
+
+### 11.2 What changed
+
+- `assets/js/json-patch.js` (new) — RFC 6902 engine, tolerant of MLB's `replace`-as-append and of
+  `~0`/`~1` pointer escapes.
+- `assets/js/delta-feed.js` (new) — per-game stream: Gameday push socket + `diffPatch` deltas
+  against a held copy, full feed only to seed or recover, 250 ms poll (150 ms in a review),
+  automatic reseed when a patch cannot be applied, status/`stats` for the UI.
+- `assets/js/live-state.js` (new) — official snapshot per update with second-precision timestamps and
+  the Gameday timecode; `diff()` yields the before → after record and the flags
+  `reviewStarted/reviewEnded/newPitch/newPlay/scoreChanged/pendingScored/unscoredAtBat`.
+- `assets/js/scoring-ledger.js` (new) — the separate, persistent ledger (pending → resolved →
+  revisions), with JSON/CSV export.
+- `assets/js/state-panel.js` (new) — renders the **Live game state** and **Official scoring ledger**
+  sections.
+- `assets/js/alertsound.js` (new) — one ~3 s raindrop on one shared `AudioContext`, gentle master
+  peak (0.16), 2.2 s de-duplication, and a test path that reports `blocked`/`unsupported` honestly.
+- `assets/js/reviews-feed.js` — event detection now runs on accepted deltas instead of a timer sweep;
+  completed-but-unscored at-bats and scoring changes are written to the ledger from a single place;
+  the status line reports the transport actually in use.
+- `server.mjs` — `/api/scoring-ledger` + `/api/scoring-ledger/stream`, stored in
+  `data/scoring-ledger-<date>.json`, with its own SSE client set, separate from the feed log.
+- `reviews.html`, `assets/css/style.css` — the two new sections, the sound toggle, the Test control,
+  and an honest note on latency in the footer.
+
+### 11.3 Checks run
+
+```text
+node tools/smoke-test.mjs                        -> 69 passed, 0 failed
+node tests/live-latency-and-ledger-test.mjs      -> 114 checks passed (new)
+node tests/run-all.mjs                           -> syntax OK · 75 local refs OK · 8 bindings OK · 47/47 jsdom
+node tests/props-provenance-test.mjs             -> 5 passed, 0 failed
+node tests/alert1-feedlog-and-provenance-test.mjs-> 6 passed, 0 failed
+node tests/da098af9-upcoming-and-parity-test.mjs -> 2 passed, 0 failed
+node tools/restoration-check.mjs                 -> ALL CHECKS PASSED (now round-trips /api/scoring-ledger,
+                                                    proves its file is separate from the feed log, and
+                                                    proves a merge keeps the first capture time with its
+                                                    own timestamp)
+node server.mjs + curl                           -> reviews.html 200 · POST/GET /api/scoring-ledger OK ·
+                                                    GET /api/scoring-ledger/stream opens an SSE stream
+```
+
+### 11.4 Defects found by these checks and fixed
+
+| # | Defect | Effect if shipped | Fix | Reference |
+|---|---|---|---|---|
+| CC-B1 | `runLimited` never released its slot when a worker threw | **the whole feed would silently freeze** on one bad payload, with no error shown | slots always released; the error is recorded and shown on the status line | <https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/reviews-feed.js> |
+| CC-B2 | `delta-feed.js` called `res.text()` only | any `json()`-only response (older browsers, some proxies) killed the delta scan invisibly | prefers `text()`, falls back to `json()` | <https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/delta-feed.js> · <https://developer.mozilla.org/en-US/docs/Web/API/Response/text> |
+| CC-B3 | server + client ledger merge kept the earliest `capturedAtMs` but the **latest** `capturedAtSec` | a record could display a capture time that never happened — fatal for an audit log | the ms and the ISO string are now taken from the same observation; asserted in both the client test and `restoration-check.mjs` | <https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/scoring-ledger.js> · <https://github.com/kanlerxz87-cyber/Alert1/blob/main/server.mjs> |
+
+### 11.5 Stated limits (not defects swept under the rug)
+
+- **No alert can precede MLB's own publication.** The delta + push work removes the client's share of
+  the delay; it cannot remove MLB's. No end-to-end latency figure is claimed anywhere.
+- **Push frame format unverified live** (offseason). The delta poll is the transport whenever the
+  socket is not open, so the latency floor in that case is one poll interval (≤ 250 ms, ≤ 150 ms in a
+  review) plus network time.
+- **Static GitHub Pages has no server**, so the ledger is `localStorage`-only there: it survives a
+  refresh, not a cache clear or a different browser. `node server.mjs` turns it into a file on disk;
+  JSON/CSV export covers the static case.

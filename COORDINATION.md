@@ -6,6 +6,23 @@ Copied source: https://github.com/snapquast73-boop/LIVPBP @ `5c02527d3c7a56ea66c
 
 Updated 2026-11-25 by session **`da098af9`** (branch `arena/da098af9-alert1`, recording PR #26 merge @ `2c1fa16` & live GitHub Pages deployment) preserving 100% of all prior and parallel-session records (`db1b5438`, `c394a038`, `8c1d3368`, `df7b58c1`, `fae80285`, `e9936287`, `f0bea661`, `0eea8c12`, `36284656`, `62e7077f`, `9b0e4ac1`, `15b89941`, `5e124cc4`, `0d7dbc14`).
 
+Updated 2026-11-27 by session **`ccfa803c`** (branch `arena/ccfa803c-alert1`, base `cdf8b08`). Every
+previously claimed task is `done`; this session claims only the files listed in CC-1..CC-4 and does
+not overwrite any other session's scope.
+
+## Active task board — session `ccfa803c` (2026-11-27)
+
+| ID | Task | Status | Owner | File scope | Notes / Official Source |
+|---|---|---|---|---|---|
+| CC-1 | **Fastest feed / latency.** Replace timer-sweep event detection with MLB's own delta transport: Gameday push websocket, then `/feed/live/diffPatch` RFC 6902 deltas against a held copy, full feed only to seed or recover. Tighten the cadence while a review is open; stop re-downloading whole feeds for live games | `done` | `ccfa803c` | new `assets/js/json-patch.js`, `assets/js/delta-feed.js`; `assets/js/reviews-feed.js`; `reviews.html` (ws preconnect); `assets/css/style.css` | `diffPatch` verified live both ways (patch array **and** full-feed fallback) — https://statsapi.mlb.com/api/v1.1/game/745111/feed/live/diffPatch?startTimecode=20240403_011327&endTimecode=20240403_011340 · https://statsapi.mlb.com/api/v1.1/game/745111/feed/live/timestamps |
+| CC-2 | **Alert sound.** One ~3 s raindrop (gentle, season-long), one shared AudioContext, on/off toggle that plays immediately, and a **Test** control that reports whether it actually played. Fires for every event that lands on the feed | `done` | `ccfa803c` | new `assets/js/alertsound.js`; `assets/js/reviews-feed.js` (toggle + `testSound`); `reviews.html`; `assets/css/style.css` | Web Audio only; peak 0.16, cooldown 2.2 s, voices self-terminating — asserted in `tests/live-latency-and-ledger-test.mjs`; Web Audio API reference https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API · https://github.com/kanlerxz87-cyber/Alert1/blob/main/assets/js/alertsound.js |
+| CC-3 | **Official live state, before and after.** Capture score / inning / outs / count / batter / pitcher / pitch count / runners / current play per accepted update with second-precision timestamps and the Gameday timecode; diff consecutive captures and show the payload's own wording before → after on the row and in a per-game panel; detect review start/end, new pitch, new play, score change, scored-from-pending and **completed-but-unscored** at-bats | `done` | `ccfa803c` | new `assets/js/live-state.js`, `assets/js/state-panel.js`; `assets/js/reviews-feed.js`; `reviews.html`; `assets/css/style.css` | Field-by-field sources in `docs/live-state.md §2`; `isPendingResult()` is the one definition of "not scored yet" — https://statsapi.mlb.com/api/v1/eventTypes · https://statsapi.mlb.com/api/v1.1/game/745111/feed/live |
+| CC-4 | **Separate, persistent official-scoring ledger.** Its own module, storage key, server route, server file, SSE client set and export (JSON/CSV); records pending rulings and every scoring change with before/after state, both official descriptions and a revision chain; cannot touch the alert path | `done` | `ccfa803c` | new `assets/js/scoring-ledger.js`; `server.mjs` (`/api/scoring-ledger[/stream]`); `reviews.html`; `tools/restoration-check.mjs`; `tests/live-latency-and-ledger-test.mjs`; `docs/live-state.md`; `flagged.html` §23 | Server round-trip + separate-file proof added to `restoration-check.mjs` — https://github.com/kanlerxz87-cyber/Alert1/blob/main/server.mjs |
+
+Full report, including what could **not** be verified (the push frame format, and the fact that no
+alert can precede MLB's own publication): [`docs/live-state.md`](docs/live-state.md) and
+[`flagged.html` §23](flagged.html).
+
 ## Active task board — session `da098af9` (2026-11-25)
 
 | ID | Task | Status | Owner | File scope | Notes / Official Source |
@@ -74,7 +91,7 @@ Updated 2026-11-25 by session **`62e7077f`** (branch `arena/62e7077f-alert1`, ba
 Arena fixes each session to one branch and forbids creating/pushing other branches, so the
 brief's `session-<id>/<task>` branch convention cannot be followed literally. Each session's
 work stays on its assigned branch only (`arena/db1b5438-alert1`, `arena/c394a038-alert1`,
-`arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`, `arena/e9936287-alert1`, `arena/f0bea661-alert1`, `arena/0eea8c12-alert1`, `arena/36284656-alert1`, `arena/62e7077f-alert1`, `arena/9b0e4ac1-alert1`, `arena/15b89941-alert1`, `arena/5e124cc4-alert1`, `arena/0d7dbc14-alert1`, `arena/da098af9-alert1`); integration is a pull request from that branch
+`arena/8c1d3368-alert1`, `arena/df7b58c1-alert1`, `arena/fae80285-alert1`, `arena/e9936287-alert1`, `arena/f0bea661-alert1`, `arena/0eea8c12-alert1`, `arena/36284656-alert1`, `arena/62e7077f-alert1`, `arena/9b0e4ac1-alert1`, `arena/15b89941-alert1`, `arena/5e124cc4-alert1`, `arena/0d7dbc14-alert1`, `arena/da098af9-alert1`, `arena/ccfa803c-alert1`); integration is a pull request from that branch
 into `main`. The deviation is published on [`flagged.html`](https://kanlerxz87-cyber.github.io/Alert1/flagged.html) (C-7 / A1-9 / F-5 / H-4 / S15-3 / DA-F4).
 
 ## Preserved board — session `9b0e4ac1` (PR #16 @ `ebc6c6d`)

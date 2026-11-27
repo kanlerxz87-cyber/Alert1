@@ -8,6 +8,12 @@
  * Persisted state lives in data/feed-log-<YYYY-MM-DD>.json so that any
  * client/browser visiting the website immediately receives all tracked
  * entries, scoring changes, and baselines across browsers and sessions.
+ *
+ * The official-scoring ledger (pending rulings + scoring changes) is stored
+ * SEPARATELY, in data/scoring-ledger-<YYYY-MM-DD>.json, and served from its own
+ * endpoints (/api/scoring-ledger, /api/scoring-ledger/stream). Two stores, two
+ * write paths, no shared code: a problem in one cannot corrupt or block the
+ * other, which is the whole point of keeping the ledger off the alert path.
  * ==========================================================================*/
 
 import http from 'node:http';
@@ -191,6 +197,142 @@ function mergeFeedLogPayloads(existing, incoming, dateStr) {
   };
 }
 
+/* ------------------------------------------------------- scoring ledger store */
+/* Same shape rules as the client (assets/js/scoring-ledger.js): v:1, a date,
+ * records[], seen{}, notes[]. Merged by record id, keeping the EARLIEST capture
+ * time and the LATEST ruling per record, so a late write from a second browser
+ * can never move a record's first observation forward or lose a revision. */
+
+function getLedgerFilePath(dateStr) {
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return null;
+  return path.join(DATA_DIR, `scoring-ledger-${dateStr}.json`);
+}
+
+function readLedgerFromDisk(dateStr) {
+  const filePath = getLedgerFilePath(dateStr);
+  if (!filePath || !fs.existsSync(filePath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (err) {
+    console.warn(`[server] failed to read scoring ledger for ${dateStr}:`, err);
+    return null;
+  }
+}
+
+function mergeLedgerPayloads(existing, incoming, dateStr) {
+  const now = Date.now();
+  const base = (existing && typeof existing === 'object' && existing.v === 1) ? existing : null;
+  const byId = new Map();
+  const eat = (payload) => {
+    if (!payload || !Array.isArray(payload.records)) return;
+    for (const rec of payload.records) {
+      if (!rec || !rec.id) continue;
+      const prev = byId.get(rec.id);
+      if (!prev) { byId.set(rec.id, rec); continue; }
+      const merged = { ...prev, ...rec };
+      merged.firstSeen = Math.min(Number(prev.firstSeen) || Infinity, Number(rec.firstSeen) || Infinity);
+      merged.capturedAtMs = Math.min(Number(prev.capturedAtMs) || Infinity, Number(rec.capturedAtMs) || Infinity);
+      if (!isFinite(merged.firstSeen)) merged.firstSeen = now;
+      if (!isFinite(merged.capturedAtMs)) merged.capturedAtMs = merged.firstSeen;
+      /* ms and the rendered ISO string must describe the SAME observation —
+       * keeping the earlier ms with the later string would misdate the record. */
+      const prevMs = Number(prev.capturedAtMs);
+      const recMs = Number(rec.capturedAtMs);
+      if (isFinite(prevMs) && (!isFinite(recMs) || prevMs <= recMs) && prev.capturedAtSec) {
+        merged.capturedAtSec = prev.capturedAtSec;
+      } else if (rec.capturedAtSec) {
+        merged.capturedAtSec = rec.capturedAtSec;
+      }
+      if (prev.resolvedAtMs && !rec.resolvedAtMs) {
+        merged.resolvedAtMs = prev.resolvedAtMs;
+        merged.resolvedAtSec = prev.resolvedAtSec;
+      }
+      const prevRev = Array.isArray(prev.revisions) ? prev.revisions : [];
+      const recRev = Array.isArray(rec.revisions) ? rec.revisions : [];
+      if (prevRev.length || recRev.length) {
+        const seenTag = new Set();
+        merged.revisions = [];
+        for (const rev of prevRev.concat(recRev)) {
+          const tag = `${rev && rev.atMs}|${rev && rev.tag}`;
+          if (seenTag.has(tag)) continue;
+          seenTag.add(tag);
+          merged.revisions.push(rev);
+        }
+        merged.revisions.sort((a, b) => (Number(a && a.atMs) || 0) - (Number(b && b.atMs) || 0));
+      }
+      byId.set(rec.id, merged);
+    }
+  };
+  if (base) eat(base);
+  eat(incoming);
+
+  const records = [...byId.values()]
+    .sort((a, b) => (Number(b.capturedAtMs) || 0) - (Number(a.capturedAtMs) || 0))
+    .slice(0, 1500);
+
+  const seen = { ...((base && base.seen) || {}) };
+  records.forEach((r) => { if (!seen[r.id]) seen[r.id] = Number(r.firstSeen) || now; });
+
+  const notes = Array.isArray(base && base.notes) ? base.notes.slice() : [];
+  for (const n of ((incoming && incoming.notes) || [])) {
+    if (typeof n === 'string' && notes.indexOf(n) === -1) notes.push(n);
+  }
+
+  return {
+    v: 1,
+    date: dateStr,
+    savedAt: now,
+    records,
+    seen,
+    notes: notes.slice(-200),
+    stats: {
+      pending: records.filter((r) => r.kind === 'pending').length,
+      changes: records.filter((r) => r.kind === 'change').length,
+      scored: records.filter((r) => r.kind === 'pending' && r.resolvedAtMs).length,
+    },
+  };
+}
+
+function writeLedgerToDisk(dateStr, payload) {
+  const filePath = getLedgerFilePath(dateStr);
+  if (!filePath) return null;
+  try {
+    const existing = readLedgerFromDisk(dateStr);
+    const merged = mergeLedgerPayloads(existing, payload, dateStr);
+    const tempPath = `${filePath}.tmp.${Date.now()}`;
+    fs.writeFileSync(tempPath, JSON.stringify(merged, null, 2), 'utf8');
+    fs.renameSync(tempPath, filePath);
+    const indexPath = path.join(DATA_DIR, 'scoring-ledger-index.json');
+    let index = {};
+    if (fs.existsSync(indexPath)) {
+      try { index = JSON.parse(fs.readFileSync(indexPath, 'utf8')) || {}; } catch (_) { /* ignore */ }
+    }
+    index[dateStr] = merged.savedAt;
+    fs.writeFileSync(indexPath, JSON.stringify(index, null, 2), 'utf8');
+    return merged;
+  } catch (err) {
+    console.error(`[server] failed to write scoring ledger for ${dateStr}:`, err);
+    return null;
+  }
+}
+
+/* SSE fan-out for the ledger, on its own client set so a slow ledger stream can
+ * never delay a feed-log frame (or the reverse). */
+const ledgerSseClients = new Set();
+
+function broadcastLedger(dateStr, payload) {
+  if (!ledgerSseClients.size) return 0;
+  let body;
+  try { body = JSON.stringify(payload); } catch (_) { return 0; }
+  const frame = `event: scoring-ledger\ndata: ${body}\n\n`;
+  let sent = 0;
+  ledgerSseClients.forEach((client) => {
+    if (client.date !== dateStr) return;
+    if (sseWrite(client.res, frame)) sent += 1;
+  });
+  return sent;
+}
+
 /* --------------------------------------------------------------- push (SSE)
  * Live tail of the shared feed log. Polling it (GET /api/feed-log) leaves a
  * window of up to the poll interval between "another browser/session wrote an
@@ -320,6 +462,90 @@ const server = http.createServer((req, res) => {
     // idempotently, exactly like its ordinary GET).
     const current = readLogFromDisk(dateStr);
     if (current) sseWrite(res, `event: feed-log\ndata: ${JSON.stringify(current)}\n\n`);
+    return;
+  }
+
+  // ----- Official scoring ledger (separate store, separate endpoints) -----
+
+  // GET /api/scoring-ledger/stream?date=YYYY-MM-DD — SSE tail of the ledger.
+  if (pathname === '/api/scoring-ledger/stream' && req.method === 'GET') {
+    const dateStr = reqUrl.searchParams.get('date');
+    if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      sendError(res, 400, 'date query parameter in YYYY-MM-DD format is required');
+      return;
+    }
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+      'Access-Control-Allow-Origin': '*',
+    });
+    sseWrite(res, `retry: 3000\nevent: connected\ndata: {"date":"${dateStr}"}\n\n`);
+    if (typeof res.flushHeaders === 'function') res.flushHeaders();
+    const client = { res, date: dateStr };
+    ledgerSseClients.add(client);
+    const heartbeat = setInterval(() => { sseWrite(res, ': hb\n\n'); }, 20000);
+    if (typeof heartbeat.unref === 'function') heartbeat.unref();
+    const cleanup = () => { clearInterval(heartbeat); ledgerSseClients.delete(client); };
+    req.on('close', cleanup);
+    req.on('error', cleanup);
+    res.on('close', cleanup);
+    const current = readLedgerFromDisk(dateStr);
+    if (current) sseWrite(res, `event: scoring-ledger\ndata: ${JSON.stringify(current)}\n\n`);
+    return;
+  }
+
+  // GET /api/scoring-ledger?date=YYYY-MM-DD
+  if (pathname === '/api/scoring-ledger' && req.method === 'GET') {
+    const dateStr = reqUrl.searchParams.get('date');
+    if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      sendError(res, 400, 'date query parameter in YYYY-MM-DD format is required');
+      return;
+    }
+    const ledger = readLedgerFromDisk(dateStr);
+    if (ledger) {
+      sendJSON(res, 200, ledger);
+    } else {
+      sendJSON(res, 200, {
+        v: 1, date: dateStr, savedAt: Date.now(), records: [], seen: {},
+        notes: [], stats: { pending: 0, changes: 0, scored: 0 },
+      });
+    }
+    return;
+  }
+
+  // POST /api/scoring-ledger
+  if (pathname === '/api/scoring-ledger' && req.method === 'POST') {
+    let body = '';
+    req.setEncoding('utf8');
+    req.on('data', (chunk) => {
+      body += chunk;
+      if (body.length > 20 * 1024 * 1024) {
+        res.writeHead(413, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Payload too large' }));
+        req.destroy();
+      }
+    });
+    req.on('end', () => {
+      try {
+        const payload = JSON.parse(body);
+        if (!payload || typeof payload !== 'object' || payload.v !== 1 ||
+          !payload.date || !/^\d{4}-\d{2}-\d{2}$/.test(payload.date)) {
+          sendError(res, 400, 'Invalid payload: must be object with v: 1 and valid date (YYYY-MM-DD)');
+          return;
+        }
+        const saved = writeLedgerToDisk(payload.date, payload);
+        if (!saved) {
+          sendError(res, 500, 'Failed to save the scoring ledger to disk');
+          return;
+        }
+        const pushed = broadcastLedger(payload.date, saved);
+        sendJSON(res, 200, { ok: true, date: payload.date, savedAt: saved.savedAt, records: saved.records.length, pushed });
+      } catch (err) {
+        sendError(res, 400, `JSON parse error: ${err.message}`);
+      }
+    });
     return;
   }
 
@@ -473,6 +699,7 @@ server.listen(PORT, HOST, () => {
   console.log(`[MLB Live PBP Server] listening on http://${HOST}:${PORT}`);
   console.log(`[MLB Live PBP Server] Serving ${REPO_DIR}`);
   console.log(`[MLB Live PBP Server] Feed log persistence directory: ${DATA_DIR}`);
+  console.log(`[MLB Live PBP Server] Scoring ledger store: ${path.join(DATA_DIR, 'scoring-ledger-<date>.json')} (separate from the feed log)`);
 });
 
 process.on('SIGTERM', () => {

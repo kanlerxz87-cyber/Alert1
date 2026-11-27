@@ -80,9 +80,43 @@ try {
   }));
   ok(zeroMergeA.status === 200 && zeroMergeB.status === 200 && JSON.parse(zeroMergeB.body).entriesCount === 2,
     'server: POST /api/feed-log preserves atBatIndex 0 distinct from empty');
-  // clean up the test artifact the POST wrote
-  fs.rmSync(path.join(ROOT, 'data', 'feed-log-2024-06-01.json'), { force: true });
-  fs.rmSync(path.join(ROOT, 'data', 'feed-log-index.json'), { force: true });
+  // Official-scoring ledger: separate endpoints, separate file, same round trip.
+  const ledgerPost = await req('POST', '/api/scoring-ledger', JSON.stringify({
+    v: 1, date: '2024-06-02', savedAt: Date.now(), seen: {}, notes: [],
+    records: [{
+      id: '824638:72:unscored', kind: 'pending', gamePk: 824638,
+      capturedAtMs: Date.parse('2024-06-02T23:10:05Z'), capturedAtSec: '2024-06-02T23:10:05Z',
+      firstSeen: Date.parse('2024-06-02T23:10:05Z'), atBatIndex: 72, inningLabel: 'Bot 8',
+      wording: 'Plate appearance complete — official result not yet published',
+    }],
+  }));
+  ok(ledgerPost.status === 200 && JSON.parse(ledgerPost.body).ok === true, 'server: POST /api/scoring-ledger');
+  const ledgerGet = await req('GET', '/api/scoring-ledger?date=2024-06-02');
+  const ledgerBody = JSON.parse(ledgerGet.body);
+  ok(ledgerGet.status === 200 && ledgerBody.records.length === 1 && ledgerBody.records[0].id === '824638:72:unscored',
+    'server: GET /api/scoring-ledger round-trip keeps the record');
+  ok(fs.existsSync(path.join(ROOT, 'data', 'scoring-ledger-2024-06-02.json')) &&
+    !fs.existsSync(path.join(ROOT, 'data', 'feed-log-2024-06-02.json')),
+    'server: the ledger is stored in its own file, separate from the feed log');
+  // A second write from a later observation must not move the first capture.
+  await req('POST', '/api/scoring-ledger', JSON.stringify({
+    v: 1, date: '2024-06-02', records: [{
+      id: '824638:72:unscored', kind: 'pending', gamePk: 824638,
+      capturedAtMs: Date.parse('2024-06-02T23:40:00Z'), capturedAtSec: '2024-06-02T23:40:00Z',
+      resolvedAtMs: Date.parse('2024-06-02T23:40:00Z'), resolvedAtSec: '2024-06-02T23:40:00Z',
+    }],
+  }));
+  const ledgerAgain = JSON.parse((await req('GET', '/api/scoring-ledger?date=2024-06-02')).body);
+  ok(ledgerAgain.records.length === 1 &&
+    ledgerAgain.records[0].capturedAtSec === '2024-06-02T23:10:05Z' &&
+    !!ledgerAgain.records[0].resolvedAtSec,
+    'server: ledger merge keeps the first capture time and the published ruling');
+
+  // clean up the test artifacts the POSTs wrote
+  for (const f of ['feed-log-2024-06-01.json', 'feed-log-index.json',
+                   'scoring-ledger-2024-06-02.json', 'scoring-ledger-index.json']) {
+    fs.rmSync(path.join(ROOT, 'data', f), { force: true });
+  }
   try { fs.rmdirSync(path.join(ROOT, 'data')); } catch { /* data/ pre-existed */ }
 } catch (e) {
   ok(false, 'server contract: ' + e.message);

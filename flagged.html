@@ -1583,6 +1583,78 @@ node server.mjs                  # optional persistence backend (feed log + SSE)
         </tr>
       </tbody>
     </table>
+
+    <h2>23. Fastest-feed delta transport, live state capture, alert sound &amp; the separate scoring ledger (session <code>ccfa803c</code>, 2026-11-27)</h2>
+    <p style="color:var(--muted);font-size:13px">
+      Session <code>ccfa803c</code> replaced the timer-sweep event detection with MLB's own delta
+      transport (Gameday push + <code>feed/live/diffPatch</code>), captured every official game state
+      with second-precision timestamps and a before → after diff, replaced the alert chime with a
+      ~3 s raindrop plus a Test control, and moved official-scoring pending rulings and scoring changes
+      into their own persistent store. What was proven and what remains unproven is stated separately
+      below. Full report: <a href="docs/live-state.md">docs/live-state.md</a>.
+    </p>
+    <table class="flagged-table">
+      <thead>
+        <tr>
+          <th style="width:62px">#</th>
+          <th>Item / Irregularity</th>
+          <th>Official Source Payload</th>
+          <th>Disposition in <code>Alert1</code></th>
+          <th>Official Source Link</th>
+          <th style="width:128px">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>CC-F1</td>
+          <td class="wrap">The official <code>diffPatch</code> endpoint changes shape: it returns a patch only in some cases and a <strong>full feed object</strong> in others (no change since the timecode, an invalid timecode, or an MLB-chosen full refresh), and it uses <code>replace</code> where RFC 6902 would require <code>add</code> (e.g. replacing <code>/metaData/gameEvents/0</code> on a shorter array)</td>
+          <td class="wrap"><code>diffPatch?startTimecode=20240403_011327&amp;endTimecode=20240403_011340</code> → an array of <code>{diff: [ {op, path, value|from} ... ]}</code>; the same call with <code>startTimecode=99999999_999999</code> → a full game object with <code>metaData.logicalEvents: ["fullUpdate"]</code></td>
+          <td class="wrap"><strong>Handled, not assumed:</strong> both answers are accepted; a full feed is adopted as a seed, an unreadable patch discards the held copy and reseeds (never a half-patched tree), <code>replace</code> at index &le; length is treated as append, and <code>~0</code>/<code>~1</code> pointer escapes are decoded. Covered by <code>tests/live-latency-and-ledger-test.mjs</code>.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1.1/game/745111/feed/live/diffPatch?startTimecode=20240403_011327&amp;endTimecode=20240403_011340" target="_blank" rel="noopener">745111 diffPatch (patch)</a> · <a href="https://statsapi.mlb.com/api/v1.1/game/745111/feed/live/diffPatch?startTimecode=99999999_999999" target="_blank" rel="noopener">745111 diffPatch (full feed)</a></td>
+          <td class="status-ok">Verified — handled</td>
+        </tr>
+        <tr>
+          <td>CC-F2</td>
+          <td class="wrap">The Gameday push websocket (<code>ws.statsapi.mlb.com</code>) is undocumented and its frame format is not published; no game was in progress on 2026-11-27 (offseason) to observe it live</td>
+          <td class="wrap">The subscription host is known from Gameday's own client traffic: <code>wss://ws.statsapi.mlb.com/api/v1/game/push/subscribe/gameday/{gamePk}</code>; the delta it drives is the documented <code>diffPatch</code> call above</td>
+          <td class="wrap"><strong>Flagged — read defensively:</strong> any frame that names an update id or change type triggers an immediate delta pull (heartbeats are ignored); if the socket cannot open the delta poll is the transport and nothing else changes. Verified against a stubbed socket, not a live one.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1.1/game/745111/feed/live/timestamps" target="_blank" rel="noopener">745111 timestamps (553 updates)</a></td>
+          <td class="status-flag">Flagged — unverified live</td>
+        </tr>
+        <tr>
+          <td>CC-F3</td>
+          <td class="wrap">A completed plate appearance whose official result is not yet published: GUMBO carries <code>about.isComplete: true</code> with <code>result.eventType</code> of <code>""</code> or <code>"at_bat_start"</code>, and the API's own pending vocabulary covers only <code>os_ruling_pending_primary</code> / <code>os_ruling_pending_prior</code></td>
+          <td class="wrap"><code>/api/v1/eventTypes</code> lists the two pending-ruling types (description "Official Scorer Ruling Pending"); the generic transition type is <code>at_bat_start</code></td>
+          <td class="wrap"><strong>Handled from the data:</strong> <code>LiveState.isPendingResult()</code> is the single definition — complete + no published result (or an official pending type) — and records it in the ledger with the observed state. The event type is never invented.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1/eventTypes" target="_blank" rel="noopener">eventTypes</a> · <a href="https://statsapi.mlb.com/api/v1.1/game/745111/feed/live" target="_blank" rel="noopener">745111 feed/live</a></td>
+          <td class="status-ok">Verified — handled</td>
+        </tr>
+        <tr>
+          <td>CC-F4</td>
+          <td class="wrap"><strong>Latency has a floor that no client can cross:</strong> the alert cannot precede MLB's own publication of the review, pending ruling or scoring change. The page can only remove its own contribution (poll interval, payload size, parse time)</td>
+          <td class="wrap"><code>metaData.wait</code> in the live feed is MLB's own suggested wait (10 s for a live game); <code>/feed/live/timestamps</code> shows the real update cadence of one game (553 timecodes, several per pitch)</td>
+          <td class="wrap"><strong>Stated, not hidden:</strong> deltas + push remove the client-side delay; the remaining delay is MLB's publication cadence, plus the browser's own background-tab throttling. Published on the page footer and in <code>docs/live-state.md §1.4</code>. No latency figure is claimed anywhere as measured end-to-end.</td>
+          <td class="wrap"><a href="https://statsapi.mlb.com/api/v1.1/game/745111/feed/live" target="_blank" rel="noopener">745111 feed/live</a></td>
+          <td class="status-flag">Flagged — inherent limit</td>
+        </tr>
+        <tr>
+          <td>CC-F5</td>
+          <td class="wrap">The official-scoring ledger's disk persistence needs the optional local server; on static GitHub Pages only <code>localStorage</code> exists</td>
+          <td class="wrap"><code>server.mjs</code> serves <code>/api/scoring-ledger</code> and <code>/api/scoring-ledger/stream</code>, storing <code>data/scoring-ledger-&lt;date&gt;.json</code> — a different file, route, SSE client set and storage key from the feed log</td>
+          <td class="wrap"><strong>Disclosed:</strong> the refresh requirement is met on static hosting; cross-browser/disk durability needs <code>node server.mjs</code>. JSON/CSV export exists in the section for the static case, and weekly export is recommended in <code>docs/live-state.md §3</code>.</td>
+          <td class="wrap"><a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/server.mjs" target="_blank" rel="noopener">server.mjs</a> · <a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/docs/live-state.md" target="_blank" rel="noopener">docs/live-state.md</a></td>
+          <td class="status-flag">Flagged — deployment</td>
+        </tr>
+        <tr>
+          <td>CC-F6</td>
+          <td class="wrap">Session <code>ccfa803c</code> branch name is fixed by the Arena sandbox to <code>arena/ccfa803c-alert1</code> rather than <code>session-ccfa803c/&lt;task&gt;</code></td>
+          <td class="wrap">Platform branch policy requires committing, pushing, and opening the PR exclusively from <code>arena/ccfa803c-alert1</code></td>
+          <td class="wrap"><strong>Disclosed:</strong> all work stays on <code>arena/ccfa803c-alert1</code>.</td>
+          <td class="wrap"><a href="https://github.com/kanlerxz87-cyber/Alert1/blob/main/COORDINATION.md" target="_blank" rel="noopener">COORDINATION.md</a></td>
+          <td class="status-flag">Flagged — inherited</td>
+        </tr>
+      </tbody>
+    </table>
   </main>
 
   <footer class="site-footer">

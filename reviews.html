@@ -15,6 +15,11 @@
        headshots off the critical path, so an extra connection would cost more
        than it saves. Ignored by browsers without support; harmless otherwise. -->
   <link rel="preconnect" href="https://statsapi.mlb.com" crossorigin>
+  <!-- Gameday's push subscription lives on its own host; opening the TCP+TLS
+       handshake while the page renders means the first socket frame arrives
+       sooner. Standard preconnect behaviour, harmless where unsupported. -->
+  <link rel="preconnect" href="https://ws.statsapi.mlb.com" crossorigin>
+  <link rel="dns-prefetch" href="https://ws.statsapi.mlb.com">
   <link rel="dns-prefetch" href="https://statsapi.mlb.com">
   <link rel="dns-prefetch" href="https://www.mlbstatic.com">
   <link rel="dns-prefetch" href="https://img.mlbstatic.com">
@@ -36,7 +41,9 @@
     </div>
     <div id="date-label" class="date-label"></div>
     <div class="feed-controls">
-      <button id="sound-toggle-btn" class="btn btn-ghost" title="Toggle alert sound — a gentle raindrop chime for new challenges/reviews/boundary calls, official-scorer pending rulings and official scoring changes (not ABS), and the same chime whenever an active review could remove a run already on the scoreboard">🔇 Sound Off</button>
+      <button id="sound-toggle-btn" class="btn btn-ghost" aria-pressed="false" title="Toggle the alert sound — one gentle ~3 s raindrop for every event that lands on this feed">🔇 Alert sound off</button>
+      <button id="sound-test-btn" class="btn btn-ghost" disabled title="Turn the alert sound on first">🔔 Test</button>
+      <span id="sound-probe" class="sound-probe" aria-live="polite">sound off</span>
       <button id="notify-toggle-btn" class="btn btn-ghost" title="Toggle desktop notifications for run-at-risk reviews — a popup the moment an active review could take a run off the scoreboard">⚪ Run Alerts Off</button>
       <button id="refresh-btn" class="btn">Refresh</button>
       <span class="countdown" id="countdown" title="Seconds until the next poll"></span>
@@ -50,6 +57,56 @@
 
   <main class="reviews-main">
     <section id="active-strip" class="active-strip-wrap"></section>
+
+    <!-- Live official game state, captured as it happens (see state-panel.js) -->
+    <section class="state-section" aria-labelledby="state-heading">
+      <div class="section-head">
+        <h2 id="state-heading">Live game state</h2>
+        <div class="section-sub">
+          Every game on the slate, captured from the official feed the moment it
+          changes — score, inning, outs, count, batter, pitcher, pitch count,
+          runners — time-stamped to the second with its Gameday timecode, plus the
+          before → after of the latest change and MLB's own wording.
+        </div>
+        <nav id="state-filter" class="tabs tabs-inline" aria-label="Filter live states">
+          <button class="tab-btn tab-on" data-state-filter="all">All games</button>
+          <button class="tab-btn" data-state-filter="live">Live only</button>
+          <button class="tab-btn" data-state-filter="review">In review</button>
+        </nav>
+        <div id="state-meta" class="state-meta"></div>
+      </div>
+      <div id="state-grid" class="state-grid"></div>
+    </section>
+
+    <!-- Official scoring ledger: pending rulings + scoring changes, kept separate
+         from the alert feed and persisted through refreshes (scoring-ledger.js) -->
+    <section class="ledger-section" aria-labelledby="ledger-heading">
+      <div class="section-head">
+        <h2 id="ledger-heading">✏️ Official scoring ledger</h2>
+        <div class="section-sub">
+          A separate, persistent log — not part of the alert path — of official-scorer
+          pending rulings on at-bats that have not been scored yet, and of every
+          scoring change when the official scorer changes the outcome of an at-bat
+          or play. Each record keeps the before and after official state, both
+          official descriptions, second-precision timestamps, and is saved to this
+          browser (and to the local server when one is running) so a refresh loses
+          nothing. Export it as JSON or CSV at any time.
+        </div>
+        <div class="ledger-tools">
+          <nav id="ledger-tabs" class="tabs tabs-inline" aria-label="Filter scoring ledger">
+            <button class="tab-btn tab-on" data-ledger-filter="all">All</button>
+            <button class="tab-btn" data-ledger-filter="pending">Pending rulings</button>
+            <button class="tab-btn" data-ledger-filter="resolved">Published</button>
+            <button class="tab-btn" data-ledger-filter="changes">Scoring changes</button>
+          </nav>
+          <button id="ledger-export-json" class="btn btn-ghost" title="Download the whole ledger as JSON">⭳ JSON</button>
+          <button id="ledger-export-csv" class="btn btn-ghost" title="Download the ledger as CSV">⭳ CSV</button>
+        </div>
+        <div id="ledger-stats" class="reviews-summary-bar ledger-stats"></div>
+      </div>
+      <div id="ledger-list" class="ledger-list" aria-live="polite"></div>
+      <div id="ledger-status" class="ledger-status"></div>
+    </section>
 
     <section id="feed-stats" class="reviews-summary-bar"></section>
 
@@ -107,6 +164,21 @@
       scoring baselines and the flagged irregularities before the first scan runs; the log holds
       only observed payload data, and anything malformed in it is dropped with a console warning
       rather than guessed.
+      <strong>How fast this page can be</strong>: live games are updated from Gameday's own
+      push channel (<code>wss://ws.statsapi.mlb.com/api/v1/game/push/subscribe/gameday/{gamePk}</code>)
+      and, as the backstop, from the official delta endpoint
+      <code>GET /api/v1.1/game/{{gamePk}}/feed/live/diffPatch?startTimecode=…</code> — RFC 6902 changes
+      against a copy of the feed already held, polled every 250 ms (150 ms while a review is open) and
+      seeded from the full feed, which is also the recovery path when a patch cannot be applied.
+      Whether a play reaches the API in one second or ten is MLB's publication cadence, not this page's;
+      what this page removes is its own share of the delay. The <strong>Live game state</strong> section
+      shows, per game, the captured state with its second-precision timestamp, the official Gameday
+      timecode and the transport that delivered it. The <strong>Official scoring ledger</strong> is a
+      separate store (<code>mlbp.scoringledger.v1.*</code> in this browser, or
+      <code>data/scoring-ledger-&lt;date&gt;.json</code> when <code>node server.mjs</code> serves the
+      site) so a refresh cannot lose a pending ruling or a scoring change, and so nothing in it can
+      interfere with the alert feed. The alert sound is one ~3 s raindrop, off by default, with a
+      Test button that says whether it actually played.
       Not affiliated with MLB or MLB Advanced Media.
       <a href="flagged.html">⚑ Flagged for Review</a> — verification log and unverified items.
     </p>
@@ -114,6 +186,12 @@
 
   <script src="assets/js/api.js"></script>
   <script src="assets/js/ui.js"></script>
+  <script src="assets/js/json-patch.js"></script>
+  <script src="assets/js/delta-feed.js"></script>
+  <script src="assets/js/live-state.js"></script>
+  <script src="assets/js/scoring-ledger.js"></script>
+  <script src="assets/js/state-panel.js"></script>
+  <script src="assets/js/alertsound.js"></script>
   <script src="assets/js/reviews.js"></script>
   <script src="assets/js/feed-log.js"></script>
   <script src="assets/js/reviews-feed.js"></script>
